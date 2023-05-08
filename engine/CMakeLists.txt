@@ -12,10 +12,10 @@ SET(engine_files
 	texture.cc
 	shader.h
 	shader.cc
-	material.h
-	material.cc
 	renderer.h
 	renderer.cc
+	transform.h
+	transform.cc
 	file_reader.h
 	file_reader.cc
 )

@@ -1,5 +1,6 @@
 #pragma once
 #include "window.h"
+#include "renderer.h"
 
 namespace Game
 {
@@ -8,6 +9,8 @@ namespace Game
 	private:
 		Engine::Window window;
 		bool shouldClose;
+
+		Engine::Renderer renderer;
 
 	public:
 		App();

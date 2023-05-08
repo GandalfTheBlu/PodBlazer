@@ -1,6 +1,7 @@
 #pragma once
 #include "GL/glew.h"
 #include <vector>
+#include <string>
 
 namespace Engine
 {
@@ -35,9 +36,10 @@ namespace Engine
 		GLuint vertexArrayObject;
 		GLuint indexBufferObject;
 		std::vector<GLuint> attributeBufferObjects;
-		std::vector<IndexAttribute> primitiveGroups;
 
 	public:
+		std::vector<IndexAttribute> primitiveGroups;
+
 		Mesh();
 		~Mesh();
 
@@ -52,7 +54,8 @@ namespace Engine
 		void Bind() const;
 		void Draw(GLuint primitiveGroupIndex) const;
 		void Unbind() const;
-	};
 
-	void ScreenQuad(Mesh& mesh);
+		void ScreenQuad();
+		bool LoadObj(const std::string& meshPath);
+	};
 }

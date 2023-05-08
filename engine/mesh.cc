@@ -89,7 +89,7 @@ namespace Engine
 		glBindVertexArray(0);
 	}
 
-	void ScreenQuad(Mesh& mesh)
+	void Mesh::ScreenQuad()
 	{
 		GLubyte indices[]
 		{
@@ -125,6 +125,11 @@ namespace Engine
 		posAttrib.offset = 0;
 		posAttrib.type = GL_FLOAT;
 
-		mesh.Init(indexBuffer, {indexAttrib}, { posBuffer }, { posAttrib });
+		Init(indexBuffer, {indexAttrib}, { posBuffer }, { posAttrib });
+	}
+
+	bool Mesh::LoadObj(const std::string& meshPath)
+	{
+		return true;
 	}
 }
