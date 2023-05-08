@@ -1,3 +1,4 @@
+#pragma once
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -21,7 +22,7 @@ namespace Engine
 		void BeginUpdate();
 		void EndUpdate();
 
-		int Width();
-		int Height();
+		int Width() const;
+		int Height() const;
 	};
 }

@@ -107,12 +107,12 @@ namespace Engine
 		glfwSwapBuffers(window);
 	}
 
-	int Window::Width()
+	int Window::Width() const
 	{
 		return width;
 	}
 
-	int Window::Height()
+	int Window::Height() const
 	{
 		return height;
 	}

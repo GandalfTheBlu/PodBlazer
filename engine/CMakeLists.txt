@@ -6,6 +6,18 @@ SET(engine_files
 	window.h
 	window.cc
 	stb_image.h
+	mesh.h
+	mesh.cc
+	texture.h
+	texture.cc
+	shader.h
+	shader.cc
+	material.h
+	material.cc
+	renderer.h
+	renderer.cc
+	file_reader.h
+	file_reader.cc
 )
 SOURCE_GROUP("engine" FILES ${engine_files})
 ADD_LIBRARY(engine STATIC ${engine_files})

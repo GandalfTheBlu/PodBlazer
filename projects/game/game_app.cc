@@ -1,4 +1,6 @@
 #include "game_app.h"
+#include "shader.h"
+#include "mesh.h"
 
 namespace Game
 {
@@ -18,6 +20,13 @@ namespace Game
 
 	void App::UpdateLoop()
 	{
+		Engine::Shader shader;
+		if (!shader.Init("assets\\shaders\\full_screen"))
+			return;
+
+		Engine::Mesh mesh;
+		Engine::ScreenQuad(mesh);
+
 		while (!shouldClose)
 		{
 			window.BeginUpdate();
@@ -27,6 +36,11 @@ namespace Game
 				break;
 			}
 			
+			shader.Use();
+			mesh.Bind();
+			mesh.Draw(0);
+			mesh.Unbind();
+			shader.StopUsing();
 
 			window.EndUpdate();
 		}
