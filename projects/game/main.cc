@@ -1,7 +1,13 @@
-#include <stdio.h>
+#include "game_app.h"
 
 int main()
 {
-	printf("hello\n");
+	Game::App app;
+	if (!app.Open())
+		return 1;
+	
+	app.UpdateLoop();
+	app.Close();
+
 	return 0;
 }

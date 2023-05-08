@@ -6,6 +6,8 @@ PROJECT(game)
 
 SET(game_files 
 	main.cc
+	game_app.h
+	game_app.cc
 )
 SOURCE_GROUP("code" FILES ${game_files})
 
