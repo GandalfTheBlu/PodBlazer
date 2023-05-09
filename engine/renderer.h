@@ -3,52 +3,41 @@
 #include "mesh.h"
 #include "texture.h"
 #include "transform.h"
+#include "camera.h"
 #include <unordered_map>
-#include <vector>
-#include <string>
-#include <memory>
+#include <functional>
 
 namespace Engine
 {
-	typedef int ResourceId;
-
 	struct Material
 	{
-		float color[3];
-		float roughness;
-		ResourceId texture;
-		ResourceId shader;
-	};
-
-	struct GraphicsObject
-	{
-		ResourceId mesh;
-		Transform transform;
-		std::vector<Material> materials;
+		Shader* shader;
+		std::function<void(Shader*)> Bind;
+		std::function<void(Shader*)> Unbind;
 	};
 
 	class Renderer
 	{
 	private:
-		std::unordered_map<std::string, ResourceId> pathToId;
-		std::unordered_map<std::string, void(*)(Mesh*)> defaultMeshGenerators;
-		std::unordered_map<ResourceId, Shader*> loadedShaders;
-		std::unordered_map<ResourceId, Mesh*> loadedMeshes;
-		std::unordered_map<ResourceId, Texture*> loadedTextures;
-		ResourceId nextResourceId;
+		std::vector<glm::mat4> transforms;
 
-		std::vector<std::shared_ptr<GraphicsObject>> graphicsObjects;
+		struct RenderNode
+		{
+			Mesh* mesh;
+			size_t primitiveGroupIndex;
+			size_t transformIndex;
+			std::function<void(Shader*)> Bind;
+			std::function<void(Shader*)> Unbind;
+		};
+
+		std::unordered_map<Shader*, std::vector<RenderNode>> renderNodes;
 
 	public:
 		Renderer();
 		~Renderer();
 
-		ResourceId GetShader(const std::string& shaderPath);
-		ResourceId GetMesh(const std::string& meshPath);
-		ResourceId GetTexture(const std::string& texturePath);
+		void Draw(Mesh* mesh, const std::vector<Material>& materials, const Transform& transform);
 
-		void AddObject(std::shared_ptr<GraphicsObject> object);
-		void RemoveObject(std::shared_ptr<GraphicsObject> object);
-		void Render();
+		void Render(const Camera& camera, const Transform& cameraTransform);
 	};
 }

@@ -11,6 +11,8 @@ namespace Engine
 		GLuint program;
 		std::unordered_map<std::string, GLint> nameToLocation;
 
+		void AddLocationIfNeeded(const std::string& name);
+
 	public:
 		Shader();
 		~Shader();
@@ -20,5 +22,9 @@ namespace Engine
 
 		void Use();
 		void StopUsing();
+
+		void SetFloat(const std::string& name, GLfloat value);
+		void SetVec3(const std::string& name, const GLfloat* valuePtr);
+		void SetMat4(const std::string& name, const GLfloat* valuePtr);
 	};
 }

@@ -2,147 +2,51 @@
 
 namespace Engine
 {
-	Renderer::Renderer() :
-		nextResourceId(0)
-	{
-		defaultMeshGenerators["default::screen_quad"] = [](Mesh* mesh)
-		{
-			mesh->ScreenQuad();
-		};
-	}
-	Renderer::~Renderer()
-	{
-		for (auto& e : loadedShaders)
-		{
-			e.second->Deinit();
-			delete e.second;
-		}
+	Renderer::Renderer(){}
+	Renderer::~Renderer(){}
 
-		for (auto& e : loadedMeshes)
-		{
-			e.second->Deinit();
-			delete e.second;
-		}
+	void Renderer::Draw(Mesh* mesh, const std::vector<Material>& materials, const Transform& transform)
+	{
+		size_t transformIndex = transforms.size();
+		transforms.push_back(transform.CalcMatrix());
 
-		for (auto& e : loadedTextures)
+		for (size_t i = 0; i < mesh->primitiveGroups.size() && i < materials.size(); i++)
 		{
-			e.second->Deinit();
-			delete e.second;
+			Shader* shader = materials[i].shader;
+			
+			if (renderNodes.count(shader) == 0)
+				renderNodes[shader] = {};
+
+			renderNodes[shader].push_back({mesh, i, transformIndex, materials[i].Bind, materials[i].Unbind});
 		}
 	}
 
-	ResourceId Renderer::GetShader(const std::string& shaderPath)
+	void Renderer::Render(const Camera& camera, const Transform& cameraTransform)
 	{
-		if (pathToId.count(shaderPath) != 0)
-			return pathToId[shaderPath];
+		glm::mat4 VP = camera.CalcVP(cameraTransform);
 
-		Shader* shader = new Shader();
-		if (!shader->Init(shaderPath))
+		for (auto& elem : renderNodes)
 		{
-			delete shader;
-			return -1;
-		}
+			Shader* shader = elem.first;
+			shader->Use();
 
-		ResourceId nextId = nextResourceId;
-		loadedShaders[nextId] = shader;
-		pathToId[shaderPath] = nextId;
-		nextResourceId++;
-		return nextId;
-	}
-
-	ResourceId Renderer::GetMesh(const std::string& meshPath)
-	{
-		if (pathToId.count(meshPath) != 0)
-			return pathToId[meshPath];
-		
-		Mesh* mesh = new Mesh();
-
-		if (defaultMeshGenerators.count(meshPath) != 0)
-		{
-			defaultMeshGenerators[meshPath](mesh);
-		}
-		else if (!mesh->LoadObj(meshPath))
-		{
-			delete mesh;
-			return -1;
-		}
-
-		ResourceId nextId = nextResourceId;
-		loadedMeshes[nextId] = mesh;
-		pathToId[meshPath] = nextId;
-		nextResourceId++;
-		return nextId;
-	}
-
-	ResourceId Renderer::GetTexture(const std::string& texturePath)
-	{
-		if (pathToId.count(texturePath) != 0)
-			return pathToId[texturePath];
-
-		Texture* texture = new Texture();
-
-		if (!texture->Init(texturePath))
-		{
-			delete texture;
-			return -1;
-		}
-
-		ResourceId nextId = nextResourceId;
-		loadedTextures[nextId] = texture;
-		pathToId[texturePath] = nextId;
-		nextResourceId++;
-		return nextId;
-	}
-
-	
-
-	void Renderer::AddObject(std::shared_ptr<GraphicsObject> object)
-	{
-		graphicsObjects.push_back(object);
-	}
-
-	void Renderer::RemoveObject(std::shared_ptr<GraphicsObject> object)
-	{
-		int i = (int)graphicsObjects.size() - 1;
-		for (; i >= 0 && graphicsObjects[i] != object; i--);
-
-		if (i >= 0)
-		{
-			graphicsObjects.erase(graphicsObjects.begin() + i);
-		}
-	}
-
-	void Renderer::Render()
-	{
-		for (auto& obj : graphicsObjects)
-		{
-			Mesh* mesh = loadedMeshes[obj->mesh];
-			mesh->Bind();
-
-			for (size_t i=0; i < obj->materials.size() && i < mesh->primitiveGroups.size(); i++)
+			for (auto& renderNode : elem.second)
 			{
-				Material& mat = obj->materials[i];
-				Shader* shader = loadedShaders[mat.shader];
-				shader->Use();
+				renderNode.mesh->Bind();
+				renderNode.Bind(shader);
 
-				Texture* texture = nullptr;
-				if (mat.texture != -1)
-				{
-					texture = loadedTextures[mat.texture];
-					texture->Bind(GL_TEXTURE0);
-				}
+				glm::mat4 MVP = VP * transforms[renderNode.transformIndex];
+				shader->SetMat4("u_MVP", &MVP[0][0]);
 
-				// TODO: set shader variables
+				renderNode.mesh->Draw(renderNode.primitiveGroupIndex);
 
-				mesh->Draw(i);
-
-				if (texture != nullptr)
-					texture->Unbind(GL_TEXTURE0);
-
-				shader->StopUsing();
+				renderNode.Unbind(shader);
+				renderNode.mesh->Unbind();
 			}
 
-			mesh->Unbind();
+			shader->StopUsing();
 		}
+
+		renderNodes.clear();
 	}
 }

@@ -97,4 +97,28 @@ namespace Engine
 	{
 		glUseProgram(0);
 	}
+
+	void Shader::AddLocationIfNeeded(const std::string& name)
+	{
+		if (nameToLocation.find(name) == nameToLocation.end())
+			nameToLocation[name] = glGetUniformLocation(program, name.c_str());
+	}
+
+	void Shader::SetFloat(const std::string& name, GLfloat value)
+	{
+		AddLocationIfNeeded(name);
+		glUniform1f(nameToLocation[name], value);
+	}
+
+	void Shader::SetVec3(const std::string& name, const GLfloat* valuePtr)
+	{
+		AddLocationIfNeeded(name);
+		glUniform3fv(nameToLocation[name], 1, valuePtr);
+	}
+
+	void Shader::SetMat4(const std::string& name, const GLfloat* valuePtr)
+	{
+		AddLocationIfNeeded(name);
+		glUniformMatrix4fv(this->nameToLocation[name], 1, GL_FALSE, valuePtr);
+	}
 }

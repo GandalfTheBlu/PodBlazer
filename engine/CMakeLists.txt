@@ -16,6 +16,8 @@ SET(engine_files
 	renderer.cc
 	transform.h
 	transform.cc
+	camera.h
+	camera.cc
 	file_reader.h
 	file_reader.cc
 )
