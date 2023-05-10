@@ -46,6 +46,13 @@ namespace Engine
 
 	Window::~Window() {}
 
+	void Window::StaticKeyCallback(GLFWwindow* _window, int key, int scancode, int action, int mods)
+	{
+		Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+		if (self->KeyCallback)
+			self->KeyCallback({ key, scancode, action, mods });
+	}
+
 	bool Window::Init(int _width, int _height, const char* title)
 	{
 		// setup glfw to get a window
@@ -66,6 +73,9 @@ namespace Engine
 		height = _height;
 		window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 		glfwMakeContextCurrent(window);
+
+		glfwSetWindowUserPointer(this->window, this);
+		glfwSetKeyCallback(this->window, Window::StaticKeyCallback);
 
 		// setup glew to get opengl stuff
 		if (glewInit() != GLEW_OK)

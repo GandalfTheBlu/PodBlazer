@@ -2,6 +2,12 @@
 
 namespace Engine
 {
+	Transform::Transform() :
+		position(glm::vec3(0.f)),
+		rotation(glm::quat(1.f, 0.f, 0.f, 0.f)),
+		scale(glm::vec3(1.f))
+	{}
+
 	glm::mat4 Transform::CalcMatrix() const
 	{
 		glm::vec3 x = rotation * glm::vec3(scale.x, 0.f, 0.f);

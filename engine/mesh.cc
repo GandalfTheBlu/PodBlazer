@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include "file_reader.h"
 
 namespace Engine
 {
@@ -93,8 +94,8 @@ namespace Engine
 	{
 		GLubyte indices[]
 		{
-			0, 1, 2,
-			0, 2, 3
+			0, 2, 1,
+			0, 3, 2
 		};
 
 		GLfloat positions[]
@@ -126,10 +127,5 @@ namespace Engine
 		posAttrib.type = GL_FLOAT;
 
 		Init(indexBuffer, {indexAttrib}, { posBuffer }, { posAttrib });
-	}
-
-	bool Mesh::LoadObj(const std::string& meshPath)
-	{
-		return true;
 	}
 }

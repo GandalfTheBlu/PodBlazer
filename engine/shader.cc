@@ -116,6 +116,12 @@ namespace Engine
 		glUniform3fv(nameToLocation[name], 1, valuePtr);
 	}
 
+	void Shader::SetMat3(const std::string& name, const GLfloat* valuePtr)
+	{
+		AddLocationIfNeeded(name);
+		glUniformMatrix3fv(this->nameToLocation[name], 1, GL_FALSE, valuePtr);
+	}
+
 	void Shader::SetMat4(const std::string& name, const GLfloat* valuePtr)
 	{
 		AddLocationIfNeeded(name);

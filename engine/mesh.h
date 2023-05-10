@@ -56,6 +56,5 @@ namespace Engine
 		void Unbind() const;
 
 		void ScreenQuad();
-		bool LoadObj(const std::string& meshPath);
 	};
 }

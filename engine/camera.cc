@@ -19,10 +19,22 @@ namespace Engine
 		far = _far;
 	}
 
-	glm::mat4 Camera::CalcVP(const Transform& transform) const
+	glm::mat4 Camera::CalcV(const Transform& transform) const
 	{
-		glm::mat4 V = glm::lookAt(transform.position, transform.position + transform.Forward(), transform.Up());
-		glm::mat4 P = glm::perspective(fovy, aspect, near, far);
-		return P * V;
+		glm::vec3 z = glm::normalize(-transform.Forward());
+		glm::vec3 x = glm::normalize(glm::cross(z, transform.Up()));
+		glm::vec3 y = glm::cross(x, z);
+
+		return glm::mat4(
+			glm::vec4(x.x, y.x, z.x, 0.f),
+			glm::vec4(x.y, y.y, z.y, 0.f),
+			glm::vec4(x.z, y.z, z.z, 0.f),
+			glm::vec4(-glm::dot(x, transform.position), -glm::dot(y, transform.position), -glm::dot(z, transform.position), 1.f)
+		);
+	}
+
+	glm::mat4 Camera::CalcP() const
+	{
+		return glm::perspective(fovy, aspect, near, far);
 	}
 }

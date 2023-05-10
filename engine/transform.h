@@ -11,6 +11,8 @@ namespace Engine
 		glm::quat rotation;
 		glm::vec3 scale;
 
+		Transform();
+
 		glm::mat4 CalcMatrix() const;
 		glm::vec3 Right() const;
 		glm::vec3 Up() const;

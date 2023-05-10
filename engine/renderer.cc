@@ -5,10 +5,29 @@ namespace Engine
 	Renderer::Renderer(){}
 	Renderer::~Renderer(){}
 
+	void Renderer::Init(const Material& _skyboxMaterial)
+	{
+		skyboxMesh.ScreenQuad();
+		skyboxMaterial = _skyboxMaterial;
+	}
+
+	void Renderer::Deinit()
+	{
+		skyboxMesh.Deinit();
+	}
+
+	void Renderer::SetCamera(const Camera& camera, const Transform& _cameraTransform)
+	{
+		cameraTransform = _cameraTransform.CalcMatrix();
+		VP = camera.CalcP() * camera.CalcV(_cameraTransform);
+	}
+
 	void Renderer::Draw(Mesh* mesh, const std::vector<Material>& materials, const Transform& transform)
 	{
-		size_t transformIndex = transforms.size();
-		transforms.push_back(transform.CalcMatrix());
+		size_t transformIndex = Ms.size();
+		glm::mat4 M = transform.CalcMatrix();
+		Ms.push_back(M);
+		MVPs.push_back(VP * M);
 
 		for (size_t i = 0; i < mesh->primitiveGroups.size() && i < materials.size(); i++)
 		{
@@ -21,10 +40,25 @@ namespace Engine
 		}
 	}
 
-	void Renderer::Render(const Camera& camera, const Transform& cameraTransform)
+	void Renderer::Render()
 	{
-		glm::mat4 VP = camera.CalcVP(cameraTransform);
+		// draw skybox
+		glDepthMask(GL_FALSE);
+		skyboxMaterial.shader->Use();
+		skyboxMaterial.Bind({skyboxMaterial.shader, cameraTransform, glm::mat4(), VP});
 
+		skyboxMesh.Bind();
+		skyboxMesh.Draw(0);
+		skyboxMesh.Unbind();
+
+		if(skyboxMaterial.Unbind != nullptr)
+			skyboxMaterial.Unbind();
+
+		skyboxMaterial.shader->StopUsing();
+		glDepthMask(GL_TRUE);
+
+
+		// draw geometry
 		for (auto& elem : renderNodes)
 		{
 			Shader* shader = elem.first;
@@ -32,15 +66,17 @@ namespace Engine
 
 			for (auto& renderNode : elem.second)
 			{
-				renderNode.mesh->Bind();
-				renderNode.Bind(shader);
+				glm::mat4& M = Ms[renderNode.transformIndex];
+				glm::mat4& MVP = MVPs[renderNode.transformIndex];
 
-				glm::mat4 MVP = VP * transforms[renderNode.transformIndex];
-				shader->SetMat4("u_MVP", &MVP[0][0]);
+				renderNode.mesh->Bind();
+				renderNode.Bind({ shader, cameraTransform, M, MVP});
 
 				renderNode.mesh->Draw(renderNode.primitiveGroupIndex);
 
-				renderNode.Unbind(shader);
+				if(renderNode.Unbind != nullptr)
+					renderNode.Unbind();
+
 				renderNode.mesh->Unbind();
 			}
 
@@ -48,5 +84,7 @@ namespace Engine
 		}
 
 		renderNodes.clear();
+		Ms.clear();
+		MVPs.clear();
 	}
 }

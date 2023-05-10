@@ -13,6 +13,7 @@ namespace Engine
 
 		void Init(float _fovy, float _aspect, float _near, float _far);
 
-		glm::mat4 CalcVP(const Transform& transform) const;
+		glm::mat4 CalcV(const Transform& transform) const;
+		glm::mat4 CalcP() const;
 	};
 }
