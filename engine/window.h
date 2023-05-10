@@ -1,6 +1,10 @@
 #pragma once
+#include <functional>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <string>
+#include <nanovg.h>
+
 
 namespace Engine
 {

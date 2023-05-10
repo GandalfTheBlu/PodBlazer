@@ -2,6 +2,14 @@
 #include <stdio.h>
 #include <string>
 
+#define GLFW_INCLUDE_ES3
+#define GLFW_INCLUDE_GLEXT
+#include <GLFW/glfw3.h>
+#include "nanovg.h"
+#define NANOVG_GLES3_IMPLEMENTATION
+#include "nanovg_gl.h"
+#include "nanovg_gl_utils.h"
+
 #define LogError(msg) printf("[ERROR] %s\n", msg)
 #define LogInfo(msg) printf("[INFO] %s\n", msg)
 

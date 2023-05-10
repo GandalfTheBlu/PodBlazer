@@ -1,10 +1,10 @@
 project (glew)
 
 set (GLEW_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+cmake_policy(SET CMP0072 NEW)
 find_package (OpenGL REQUIRED)
 set (GLEW_LIBRARIES ${OPENGL_LIBRARIES})
 include_directories (${GLEW_DIR}/include)
-
 set(GLEW_HEAD 
 	${GLEW_DIR}/include/GL/glew.h
 	${GLEW_DIR}/include/GL/wglew.h
@@ -16,4 +16,5 @@ set(GLEW_SRC
 
 add_definitions(-DGLEW_STATIC)
 add_library (glew STATIC ${GLEW_SRC} ${GLEW_HEAD})
+target_compile_definitions(glew PUBLIC -DGLEW_NO_GLU)
 #target_link_libraries (glew ${GLEW_LIBRARIES})
