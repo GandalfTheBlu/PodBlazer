@@ -4,14 +4,36 @@
 
 namespace Engine
 {
+	std::unordered_set<Shader*> Shader::loadedShaders;
+
 	Shader::Shader() :
 		program(0)
 	{}
 
 	Shader::~Shader(){}
 
+	bool Shader::ReloadAll()
+	{
+		bool success = true;
+		for (auto& shader : loadedShaders)
+			success &= shader->Reload();
+
+		return success;
+	}
+
+	bool Shader::Reload()
+	{
+		Deinit();
+		return Init(path);
+	}
+
 	bool Shader::Init(const std::string& shaderPath)
 	{
+		if (loadedShaders.count(this) == 0)
+			loadedShaders.insert(this);
+
+		path = shaderPath;
+
 		std::string vertPath = shaderPath;
 		vertPath.append("_vert.glsl");
 

@@ -4,9 +4,9 @@
 
 namespace Game
 {
-	Engine::Shader GameObjectInstance::phongShader;
+	Engine::Shader Prefab::phongShader;
 
-	GameObjectInstance::GameObjectInstance(const std::string& meshPath)
+	Prefab::Prefab(const std::string& meshPath)
 	{
 		std::vector<Engine::ObjMaterialInfo> objMaterialInfos;
 		mesh = new Engine::Mesh();
@@ -39,29 +39,29 @@ namespace Game
 		}
 	}
 
-	GameObjectInstance::~GameObjectInstance()
+	Prefab::~Prefab()
 	{
 		delete mesh;
 	}
 
-	bool GameObjectInstance::Init(const std::string& phongShaderPath)
+	bool Prefab::Init(const std::string& phongShaderPath)
 	{
 		return phongShader.Init(phongShaderPath);
 	}
 
-	void GameObjectInstance::Deinit()
+	void Prefab::Deinit()
 	{
 		phongShader.Deinit();
 	}
 
-	GameObject::GameObject(GameObjectInstance* _instance) :
-		instance(_instance)
+	GameObject::GameObject(Prefab* _prefab) :
+		prefab(_prefab)
 	{}
 
 	GameObject::~GameObject(){}
 
 	void GameObject::Draw(Engine::Renderer& renderer)
 	{
-		renderer.Draw(instance->mesh, instance->materials, transform);
+		renderer.Draw(prefab->mesh, prefab->materials, transform);
 	}
 }

@@ -2,12 +2,16 @@
 #include <GL/glew.h>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace Engine
 {
 	class Shader
 	{
 	private:
+		static std::unordered_set<Shader*> loadedShaders;
+
+		std::string path;
 		GLuint program;
 		std::unordered_map<std::string, GLint> nameToLocation;
 
@@ -17,6 +21,9 @@ namespace Engine
 		Shader();
 		~Shader();
 
+		static bool ReloadAll();
+
+		bool Reload();
 		bool Init(const std::string& shaderPath);
 		void Deinit();
 

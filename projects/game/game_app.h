@@ -16,7 +16,7 @@ namespace Game
 
 		Engine::Shader skyboxShader;
 
-		std::unordered_map<std::string, GameObjectInstance*> prefabs;
+		std::unordered_map<std::string, Prefab*> prefabs;
 		std::vector<GameObject*> gameObjects;
 
 	public:

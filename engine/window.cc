@@ -76,6 +76,7 @@ namespace Engine
 
 		glfwSetWindowUserPointer(this->window, this);
 		glfwSetKeyCallback(this->window, Window::StaticKeyCallback);
+		glfwSwapInterval(1);
 
 		// setup glew to get opengl stuff
 		if (glewInit() != GLEW_OK)

@@ -7,19 +7,19 @@
 
 namespace Game
 {
-	class GameObjectInstance
+	class Prefab
 	{
 	private:
 		static Engine::Shader phongShader;
 
-		GameObjectInstance() = delete;
+		Prefab() = delete;
 
 	public:
 		Engine::Mesh* mesh;
 		std::vector<Engine::Material> materials;
 
-		GameObjectInstance(const std::string& meshPath);
-		~GameObjectInstance();
+		Prefab(const std::string& meshPath);
+		~Prefab();
 
 		static bool Init(const std::string& phongShaderPath);
 		static void Deinit();
@@ -28,14 +28,14 @@ namespace Game
 	class GameObject
 	{
 	private:
-		GameObjectInstance* instance;
+		Prefab* prefab;
 
 		GameObject() = delete;
 
 	public:
 		Engine::Transform transform;
 
-		GameObject(GameObjectInstance* _instance);
+		GameObject(Prefab* _prefab);
 		~GameObject();
 
 		void Draw(Engine::Renderer& renderer);

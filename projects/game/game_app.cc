@@ -15,7 +15,7 @@ namespace Game
 		if (!window.Init(800, 600, "Pod Blazer"))
 			return false;
 
-		if (!GameObjectInstance::Init("assets\\shaders\\phong"))
+		if (!Prefab::Init("assets\\shaders\\phong"))
 			return false;
 
 		if (!skyboxShader.Init("assets\\shaders\\skybox"))
@@ -32,7 +32,7 @@ namespace Game
 			nullptr
 		});
 
-		prefabs["astronaut"] = new GameObjectInstance("assets\\kenney_space-kit\\Models\\OBJ format\\astronautA.obj");
+		prefabs["astronaut"] = new Prefab("assets\\kenney_space-kit\\Models\\OBJ format\\astronautA.obj");
 
 		for (size_t i = 0; i < 50; i++)
 		{
@@ -52,14 +52,21 @@ namespace Game
 	{
 		Engine::Transform cameraTransform;
 
-		std::unordered_map<int, bool> keys;
+		struct KeyState
+		{
+			bool pressed;
+			bool held;
+			bool released;
+		};
+
+		std::unordered_map<int, KeyState> keys;
 
 		window.KeyCallback = [&keys](const Engine::KeyEvent& e)
 		{
 			if (e.action == GLFW_PRESS)
-				keys[e.key] = true;
+				keys[e.key] = {true, true, false};
 			else if (e.action == GLFW_RELEASE)
-				keys[e.key] = false;
+				keys[e.key] = {false, false, true};
 		};
 
 		float dt = 1.f / 60.f;
@@ -69,6 +76,7 @@ namespace Game
 		float rotY = 0.f;
 		float rotSpeed = 2.f;
 		float moveSpeed = 10.f;
+		float sunAngle = 0.3f;
 
 		while (!shouldClose)
 		{
@@ -82,19 +90,19 @@ namespace Game
 			}
 
 			glm::vec3 move = glm::vec3(0.f);
-			if (keys[GLFW_KEY_W])
+			if (keys[GLFW_KEY_W].held)
 			{
 				move += cameraTransform.Forward();
 			}
-			if (keys[GLFW_KEY_S])
+			if (keys[GLFW_KEY_S].held)
 			{
 				move -= cameraTransform.Forward();
 			}
-			if (keys[GLFW_KEY_A])
+			if (keys[GLFW_KEY_A].held)
 			{
 				move -= cameraTransform.Right();
 			}
-			if (keys[GLFW_KEY_D])
+			if (keys[GLFW_KEY_D].held)
 			{
 				move += cameraTransform.Right();
 			}
@@ -102,34 +110,60 @@ namespace Game
 			if(glm::dot(move, move) > 0.f)
 				cameraTransform.position += glm::normalize(move) * (dt * moveSpeed);
 			
-			if (keys[GLFW_KEY_UP])
+			if (keys[GLFW_KEY_UP].held)
 			{
 				rotX += dt * rotSpeed;
 			}
-			if (keys[GLFW_KEY_DOWN])
+			if (keys[GLFW_KEY_DOWN].held)
 			{
 				rotX -= dt * rotSpeed;
 			}
-			if (keys[GLFW_KEY_LEFT])
+			if (keys[GLFW_KEY_LEFT].held)
 			{
 				rotY -= dt * rotSpeed;
 			}
-			if (keys[GLFW_KEY_RIGHT])
+			if (keys[GLFW_KEY_RIGHT].held)
 			{
 				rotY += dt * rotSpeed;
 			}
 
 			cameraTransform.rotation = glm::quat(glm::vec3(0.f, rotY, 0.f)) * glm::quat(glm::vec3(rotX, 0.f, 0.f));
 
+			if (keys[GLFW_KEY_1].held)
+			{
+				sunAngle += dt;
+			}
+			if (keys[GLFW_KEY_2].held)
+			{
+				sunAngle -= dt;
+			}
+
+			WorldSettings::Instance().directionalLight = glm::normalize(glm::quat(glm::vec3(sunAngle, 0.4f, 0.f)) * glm::vec3(0.f, 0.f, 1.f));
+
+			if (keys[GLFW_KEY_END].pressed)
+			{
+				bool success = Engine::Shader::ReloadAll();
+				printf("[INFO] reloaded shaders, success: %s\n", (success ? "yes" : "no"));
+			}
+
 			// render
 			renderer.SetCamera(camera, cameraTransform);
+			float offset = 0.f;
 			for (auto& obj : gameObjects)
 			{
+				obj->transform.rotation = glm::quat(glm::vec3(0.f, totalTime + offset, 0.f));
 				obj->Draw(renderer);
+				offset += 0.3f;
 			}
 			renderer.Render();
 
 			window.EndUpdate();
+
+			for (auto& k : keys)
+			{
+				k.second.pressed = false;
+				k.second.released = false;
+			}
 
 			auto t1 = std::chrono::steady_clock::now();
 			dt = glm::min(1.f / 30.f, std::chrono::duration<float>(t1 - t0).count());
@@ -146,11 +180,8 @@ namespace Game
 			delete e;
 
 		skyboxShader.Deinit();
-
 		renderer.Deinit();
-
-		GameObjectInstance::Deinit();
-
+		Prefab::Deinit();
 		window.Deinit();
 	}
 }
