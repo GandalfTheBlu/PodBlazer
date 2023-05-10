@@ -88,6 +88,15 @@ namespace Engine
 			return false;
 		}
 
+				const GLubyte* vendor = glGetString(GL_VENDOR);
+		const GLubyte* renderer = glGetString(GL_RENDERER);
+		const GLubyte* version = glGetString(GL_VERSION);
+		const GLubyte* shdVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+		printf("GPU Vendor: %s\n", vendor);
+		printf("GPU Render Device: %s\n", renderer);
+		printf("OpenGL Version: %s\n", version);
+		printf("GLSL Version: %s\n", shdVersion);
+
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		if (glDebugMessageCallback)
