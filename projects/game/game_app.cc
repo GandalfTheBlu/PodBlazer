@@ -123,10 +123,12 @@ namespace Game
 				if (!(axes[1] > -0.05f && axes[1] < 0.05f))
 				{
 					//move -= player->transform.Forward() * axes[1];
+					player->velocityVector -= player->transform.Forward() * player->acceleration * axes[1];
 				}
 				if (!(axes[0] > -0.05f && axes[0] < 0.05f))
 				{
 					//move += player->transform.Right() * axes[0];
+					player->velocityVector += player->transform.Right() * player->acceleration * axes[0];
 				}
 
 
@@ -171,26 +173,18 @@ namespace Game
 				player->transform.position += player->velocityVector * dt;
 			}
 			
-			/*
-			if (keys[GLFW_KEY_UP].held)
-			{
-				rotX += dt * rotSpeed;
-			}
-			if (keys[GLFW_KEY_DOWN].held)
-			{
-				rotX -= dt * rotSpeed;
-			}
-			*/
 			if (keys[GLFW_KEY_LEFT].held)
 			{
-				rotY -= dt * rotSpeed;
+				player->yAngularVelocity -= dt * player->angularAcceleration;
 			}
 			if (keys[GLFW_KEY_RIGHT].held)
 			{
-				rotY += dt * rotSpeed;
+				player->yAngularVelocity += dt * player->angularAcceleration;
 			}
+			player->yAngularVelocity *= 1 - player->angularFriction;
+			player->yRotation += player->yAngularVelocity * dt;
 
-			player->transform.rotation = glm::quat(glm::vec3(0.f, rotY, 0.f)) * glm::quat(glm::vec3(rotX, 0.f, 0.f));
+			player->transform.rotation = glm::quat(glm::vec3(0.f, player->yRotation, 0.f)) * glm::quat(glm::vec3(rotX, 0.f, 0.f));
 
 			if (keys[GLFW_KEY_1].held)
 			{
