@@ -68,8 +68,6 @@ namespace Game
 
 	void App::UpdateLoop()
 	{
-		Engine::Transform cameraTransform;
-
 		struct KeyState
 		{
 			bool pressed;
@@ -99,6 +97,9 @@ namespace Game
 
 		Player* player = new Player(prefabs["ship"]);
 		gameObjects.push_back(player);
+
+		Engine::Transform cameraTransform;
+		cameraTransform.position = player->cameraOffset;
 
 		float maxRenderDist = 50.f;
 
@@ -211,11 +212,13 @@ namespace Game
 			glm::vec3 cameraPosition = player->transform.position + forwardOffset;
 			glm::quat cameraRotation = player->transform.rotation * glm::quat(glm::vec3(0.f, glm::radians(0.0f), 0.f));
 			
-			cameraTransform.position = glm::mix(cameraTransform.position, cameraPosition, 0.5f);
-			cameraTransform.rotation = glm::mix(cameraTransform.rotation, cameraRotation, 0.5f);
+			cameraTransform.position = glm::mix(cameraTransform.position, cameraPosition, 0.1f);
+			cameraTransform.rotation = glm::mix(cameraTransform.rotation, cameraRotation, 0.1f);
 
 			if (player->IsColliding(mapData, 5.f))
 			{
+				cameraTransform.position = player->cameraOffset;
+				cameraTransform.rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
 				player->transform.position *= 0.f;
 				player->yRotation = 0.f;
 				player->yAngularVelocity = 0.f;
