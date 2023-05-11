@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "renderer.h"
 #include <unordered_map>
+#include "file_reader.h"
 
 namespace Game
 {
@@ -19,6 +20,7 @@ namespace Game
 		std::vector<Engine::Material> materials;
 
 		Prefab(const std::string& meshPath);
+		Prefab(Engine::Mesh* newMesh, const std::vector<Engine::ObjMaterialInfo>& materialInfos);
 		~Prefab();
 
 		static bool Init(const std::string& phongShaderPath);
@@ -34,6 +36,7 @@ namespace Game
 
 	public:
 		Engine::Transform transform;
+		bool cull;
 
 		GameObject(Prefab* _prefab);
 		~GameObject();

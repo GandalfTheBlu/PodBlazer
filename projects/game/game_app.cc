@@ -3,6 +3,7 @@
 #include <chrono>
 #include "file_reader.h"
 #include "player.h"
+#include "map_generator.h"
 
 namespace Game
 {
@@ -24,8 +25,15 @@ namespace Game
 			return false;
 
 		std::vector<glm::vec2> mapData;
-		if (!Engine::ReadMapFile("assets/map_data/map.txt", mapData))
+		if (!LoadMapFile("assets/map_data/map.txt", mapData))
 			return false;
+
+		Prefab* mapPrefab = nullptr;
+		GenerateRoad(mapData, mapPrefab);
+		prefabs["map"] = mapPrefab;
+		GameObject* road = new GameObject(mapPrefab);
+		road->cull = false;
+		gameObjects.push_back(road);
 
 		renderer.Init({
 			&skyboxShader,
@@ -38,14 +46,19 @@ namespace Game
 			nullptr
 		});
 
-		prefabs["astronaut"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/craft_speederA.obj");
+		prefabs["rock1"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_crystals.obj");
+		prefabs["rock2"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_crystalsLargeA.obj");
+		prefabs["rock3"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_largeA.obj");
+		prefabs["satellite"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/satelliteDish.obj");
 
-		for (size_t i = 0; i < 50; i++)
-		{
-			GameObject* obj = new GameObject(prefabs["astronaut"]);
-			obj->transform.position = glm::vec3(-50.f + i, 0.f, 10.f);
-			gameObjects.push_back(obj);
-		}
+		SpawnSideObjects(mapData, {prefabs["rock1"], prefabs["rock2"], prefabs["rock3"], prefabs["satellite"]}, gameObjects);
+
+		prefabs["ground"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/terrain.obj");
+		GameObject* ground = new GameObject(prefabs["ground"]);
+		ground->transform.scale *= 500.f;
+		ground->transform.position.y = -0.1f;
+		ground->cull = false;
+		gameObjects.push_back(ground);
 
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
 
@@ -85,6 +98,7 @@ namespace Game
 
 		Player* player = new Player(prefabs["astronaut"]);
 		player->transform.position = glm::vec3(-50.f + 70, 0.f, 10.f);
+		float maxRenderDist = 50.f;
 
 		while (!shouldClose)
 		{
@@ -206,12 +220,18 @@ namespace Game
 			cameraTransform.position = cameraPosition;
 			cameraTransform.rotation = cameraRotation;
 			renderer.SetCamera(camera, cameraTransform);
-			float offset = 0.f;
 			for (auto& obj : gameObjects)
 			{
-				obj->transform.rotation = glm::quat(glm::vec3(0.f, totalTime + offset, 0.f));
+				glm::vec3 toObj = obj->transform.position - cameraTransform.position;
+
+				// culling
+				if (obj->cull && (
+					glm::dot(toObj, toObj) > maxRenderDist * maxRenderDist ||
+					glm::dot(toObj, cameraTransform.Forward()) < 0.f
+				))
+					continue;
+
 				obj->Draw(renderer);
-				offset += 0.3f;
 			}
 
 			renderer.Render();
