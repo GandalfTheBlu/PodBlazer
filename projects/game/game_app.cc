@@ -35,17 +35,6 @@ namespace Game
 		road->cull = false;
 		gameObjects.push_back(road);
 
-		renderer.Init({
-			&skyboxShader,
-			[](const Engine::MaterialBindInput& inp)
-			{
-				glm::mat3 invMVP = glm::inverse(glm::mat3(inp.MVP));
-				inp.shader->SetMat3("u_invMVP", &invMVP[0][0]);
-				inp.shader->SetVec3("u_lightDir", &WorldSettings::Instance().directionalLight[0]);
-			},
-			nullptr
-		});
-
 		prefabs["rock1"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_crystals.obj");
 		prefabs["rock2"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_crystalsLargeA.obj");
 		prefabs["rock3"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_largeA.obj");
@@ -59,6 +48,17 @@ namespace Game
 		ground->transform.position.y = -0.1f;
 		ground->cull = false;
 		gameObjects.push_back(ground);
+
+		renderer.Init({
+			&skyboxShader,
+			[](const Engine::MaterialBindInput& inp)
+			{
+				glm::mat3 invMVP = glm::inverse(glm::mat3(inp.MVP));
+				inp.shader->SetMat3("u_invMVP", &invMVP[0][0]);
+				inp.shader->SetVec3("u_lightDir", &WorldSettings::Instance().directionalLight[0]);
+			},
+			nullptr
+		});
 
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
 
