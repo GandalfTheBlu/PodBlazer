@@ -15,10 +15,10 @@ namespace Game
 		if (!window.Init(1400, 1000, "Pod Blazer"))
 			return false;
 
-		if (!Prefab::Init("assets\\shaders\\phong"))
+		if (!Prefab::Init("assets/shaders/phong"))
 			return false;
 
-		if (!skyboxShader.Init("assets\\shaders\\skybox"))
+		if (!skyboxShader.Init("assets/shaders/skybox"))
 			return false;
 
 		renderer.Init({
@@ -32,7 +32,7 @@ namespace Game
 			nullptr
 		});
 
-		prefabs["astronaut"] = new Prefab("assets\\kenney_space-kit\\Models\\OBJ format\\astronautA.obj");
+		prefabs["astronaut"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/craft_speederA.obj");
 
 		for (size_t i = 0; i < 50; i++)
 		{
