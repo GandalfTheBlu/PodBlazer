@@ -12,7 +12,7 @@ namespace Game
 
 	bool App::Open()
 	{
-		if (!window.Init(800, 600, "Pod Blazer"))
+		if (!window.Init(1400, 1000, "Pod Blazer"))
 			return false;
 
 		if (!Prefab::Init("assets\\shaders\\phong"))
@@ -40,8 +40,6 @@ namespace Game
 			obj->transform.position = glm::vec3(-50.f + i, 0.f, 10.f);
 			gameObjects.push_back(obj);
 		}
-
-		WorldSettings::Instance().directionalLight = glm::normalize(glm::vec3(-1.f, -1.f, 1.f));
 
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
 
@@ -77,6 +75,7 @@ namespace Game
 		float rotSpeed = 2.f;
 		float moveSpeed = 10.f;
 		float sunAngle = 0.3f;
+		float sunSpeed = 1.f;
 
 		while (!shouldClose)
 		{
@@ -131,14 +130,16 @@ namespace Game
 
 			if (keys[GLFW_KEY_1].held)
 			{
-				sunAngle += dt;
+				sunAngle += dt * sunSpeed;
 			}
 			if (keys[GLFW_KEY_2].held)
 			{
-				sunAngle -= dt;
+				sunAngle -= dt * sunSpeed;
 			}
 
-			WorldSettings::Instance().directionalLight = glm::normalize(glm::quat(glm::vec3(sunAngle, 0.4f, 0.f)) * glm::vec3(0.f, 0.f, 1.f));
+			WorldSettings::Instance().directionalLight = glm::normalize(
+				glm::quat(glm::vec3(sunAngle, 0.f, 0.f)) * glm::quat(glm::vec3(0.f, 0.2f, 0.f)) *
+				glm::vec3(0.f, 0.f, 1.f));
 
 			if (keys[GLFW_KEY_END].pressed)
 			{
