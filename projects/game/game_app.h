@@ -2,6 +2,7 @@
 #include "window.h"
 #include "renderer.h"
 #include "game_object.h"
+#include "../exts/glm/vec2.hpp"
 
 namespace Game
 {
@@ -18,6 +19,8 @@ namespace Game
 
 		std::unordered_map<std::string, Prefab*> prefabs;
 		std::vector<GameObject*> gameObjects;
+
+		std::vector<glm::vec2> mapData;
 
 	public:
 		App();

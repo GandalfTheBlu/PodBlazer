@@ -39,7 +39,7 @@ namespace Game
 		bool cull;
 
 		GameObject(Prefab* _prefab);
-		~GameObject();
+		virtual ~GameObject();
 
 		void Draw(Engine::Renderer& renderer);
 	};

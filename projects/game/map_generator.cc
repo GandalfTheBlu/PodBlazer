@@ -21,6 +21,8 @@ namespace Game
 			outPoints.push_back(glm::vec2(x, y));
 			coordsStart = coordsMatch.suffix().first;
 		}
+
+		return true;
 	}
 
 #define PUSH3(v, x, y, z) v.push_back(x);v.push_back(y);v.push_back(z)
