@@ -1,4 +1,6 @@
-#version 430
+#version 310 es
+
+precision highp float;
 
 layout(location=0) in vec3 a_position;
 layout(location=2) in vec3 a_normal;

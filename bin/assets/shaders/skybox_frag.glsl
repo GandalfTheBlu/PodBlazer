@@ -1,4 +1,6 @@
-#version 430
+#version 310 es
+
+precision highp float;
 
 uniform mat3 u_invMVP;
 uniform vec3 u_lightDir;

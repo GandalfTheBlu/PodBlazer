@@ -1,4 +1,6 @@
-#version 430
+#version 310 es
+
+precision highp float;
 
 uniform vec3 u_color;
 uniform vec3 u_camPos;
