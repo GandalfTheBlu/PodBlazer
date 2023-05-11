@@ -36,7 +36,7 @@ namespace Game
 		std::vector<GLfloat> normals;
 		std::vector<GLuint> indices;
 
-		float halfRoadWidth = 2.f;
+		float halfRoadWidth = 4.f;
 
 		for (int i = 0; i < (int)mapData.size(); i++)
 		{
@@ -116,7 +116,7 @@ namespace Game
 		int objectsPerSegment = 3;
 		size_t prefabIndex = 0;
 
-		float roadOffset = 4.f;
+		float roadOffset = 6.f;
 
 		for (int i = 0; i < (int)mapData.size(); i++)
 		{
@@ -134,6 +134,7 @@ namespace Game
 				GameObject* obj = new GameObject(prefabs[prefabIndex]);
 				float side = j % 2 == 0 ? -1.f : 1.f;
 				obj->transform.position = q0 + (q1 - q0) * ((float)j / objectsPerSegment) + leftDir * (side * roadOffset);
+				obj->transform.scale *= 3.5f;
 				outGameObjects.push_back(obj);
 
 				prefabIndex = (prefabIndex + 1) % prefabs.size();

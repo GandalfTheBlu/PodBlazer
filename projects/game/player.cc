@@ -19,7 +19,9 @@ bool Player::IsColliding(const std::vector<glm::vec2>& mapData, float maxOffset)
 		float distAlongDir = glm::dot(p0ToPlayer, glm::normalize(dir));
 		float dir2 = glm::dot(dir, dir);
 
-		if (distAlongDir < 0.f || distAlongDir * distAlongDir > dir2)
+		float margin = 2.f;
+
+		if (distAlongDir < -margin || distAlongDir * distAlongDir > dir2)
 			continue;
 
 		float offset2 = glm::dot(p0ToPlayer, p0ToPlayer) - distAlongDir * distAlongDir;

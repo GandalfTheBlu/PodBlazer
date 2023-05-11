@@ -59,6 +59,8 @@ namespace Game
 			nullptr
 		});
 
+		prefabs["ship"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/craft_speederC.obj");
+
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
 
 		return true;
@@ -95,8 +97,7 @@ namespace Game
 		float sunAngle = 0.3f;
 		float sunSpeed = 1.f;
 
-		Player* player = new Player(prefabs["rock1"]);
-		player->transform.position = glm::vec3(-50.f + 70, 0.f, 10.f);
+		Player* player = new Player(prefabs["ship"]);
 		gameObjects.push_back(player);
 
 		float maxRenderDist = 50.f;
@@ -209,12 +210,16 @@ namespace Game
 			forwardOffset.y += player->cameraOffset.y;
 			glm::vec3 cameraPosition = player->transform.position + forwardOffset;
 			glm::quat cameraRotation = player->transform.rotation * glm::quat(glm::vec3(0.f, glm::radians(0.0f), 0.f));
-			cameraTransform.position = cameraPosition;
-			cameraTransform.rotation = cameraRotation;
+			
+			cameraTransform.position = glm::mix(cameraTransform.position, cameraPosition, 0.5f);
+			cameraTransform.rotation = glm::mix(cameraTransform.rotation, cameraRotation, 0.5f);
 
-			if (player->IsColliding(mapData, 2.f))
+			if (player->IsColliding(mapData, 5.f))
 			{
-				printf("colliding %f\n", dt);
+				player->transform.position *= 0.f;
+				player->yRotation = 0.f;
+				player->yAngularVelocity = 0.f;
+				player->velocityVector *= 0.f;
 			}
 
 			// render
