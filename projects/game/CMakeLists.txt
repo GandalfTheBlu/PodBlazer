@@ -14,6 +14,8 @@ SET(game_files
 	world_settings.cc
 	player.cc
 	player.h
+map_generator.cc
+map_generator.h
 )
 SOURCE_GROUP("code" FILES ${game_files})
 
