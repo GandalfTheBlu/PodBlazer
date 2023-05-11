@@ -1,4 +1,5 @@
 #include "game_app.h"
+#include <iostream>
 
 namespace Game
 {
@@ -71,6 +72,21 @@ namespace Game
 			{
 				shouldClose = true;
 				break;
+			}
+
+			int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+			std::cout << present << std::endl;
+
+			if (present == 1) {
+				int axesCount;
+				const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+
+				std::cout << "Left Stick X Axis: " << axes[0] << std::endl;
+				std::cout << "Left Stick Y Axis: " << axes[1] << std::endl;
+				std::cout << "Right Stick X Axis: " << axes[2] << std::endl;
+				std::cout << "Right Stick Y Axis: " << axes[3] << std::endl;
+				std::cout << "Left Trigger/L2: " << axes[4] << std::endl;
+				std::cout << "Right Trigger/R2: " << axes[5] << std::endl;
 			}
 
 			transform2.rotation *= glm::quat(glm::vec3(0.f, 0.02f, 0.f));
