@@ -116,23 +116,23 @@ namespace Game
 				int axesCount;
 				const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 
-				if (axes[1]!=0)
+				if (!(axes[1] > -0.05f && axes[1] < 0.05f))
 				{
-					move += cameraTransform.Forward() * axes[1];
+					move -= cameraTransform.Forward() * axes[1];
 				}
-				if (axes[0] != 0)
+				if (!(axes[0] > -0.05f && axes[0] < 0.05f))
 				{
 					move += cameraTransform.Right() * axes[0];
 				}
 
 
-				if (axes[3]!=0)
+				if (!(axes[4] > -0.05f && axes[4] < 0.05f))
 				{
-					rotX -= dt * rotSpeed * axes[3];
+					rotX += dt * rotSpeed * axes[4];
 				}
-				if (axes[2]!=0)
+				if (!(axes[3] > -0.05f && axes[3] < 0.05f))
 				{
-					rotY += dt * rotSpeed * axes[2];
+					rotY += dt * rotSpeed * axes[3];
 				}
 
 			}
