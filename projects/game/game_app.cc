@@ -1,6 +1,7 @@
 #include "game_app.h"
 #include "world_settings.h"
 #include <chrono>
+#include "file_reader.h"
 
 namespace Game
 {
@@ -19,6 +20,10 @@ namespace Game
 			return false;
 
 		if (!skyboxShader.Init("assets/shaders/skybox"))
+			return false;
+
+		std::vector<glm::vec2> mapData;
+		if (!Engine::ReadMapFile("assets/map_data/map.txt", mapData))
 			return false;
 
 		renderer.Init({
