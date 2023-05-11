@@ -98,7 +98,7 @@ namespace Game
 			}
 
 
-			glm::vec3 move = glm::vec3(0.f);
+			//glm::vec3 move = glm::vec3(0.f);
 
 			int gamePadConnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
 			if (gamePadConnected == 1) {
@@ -107,11 +107,11 @@ namespace Game
 
 				if (!(axes[1] > -0.05f && axes[1] < 0.05f))
 				{
-					move -= player->transform.Forward() * axes[1];
+					//move -= player->transform.Forward() * axes[1];
 				}
 				if (!(axes[0] > -0.05f && axes[0] < 0.05f))
 				{
-					move += player->transform.Right() * axes[0];
+					//move += player->transform.Right() * axes[0];
 				}
 
 
@@ -145,14 +145,16 @@ namespace Game
 				player->velocityVector += player->transform.Right() * player->acceleration;
 			}
 
-			player->velocityVector *= player->friction;
+			player->velocityVector *= 1-player->friction;
 			if (glm::length(player->velocityVector) > player->maxSpeed)
 			{
 				player->velocityVector = glm::normalize(player->velocityVector) * player->maxSpeed;
 			}
 
-			if(glm::dot(move, move) > 0.f)
-				player->transform.position+= glm::normalize(player->velocityVector) * dt;
+			if (glm::length(player->velocityVector) > 0.f)
+			{
+				player->transform.position += player->velocityVector * dt;
+			}
 			
 			/*
 			if (keys[GLFW_KEY_UP].held)

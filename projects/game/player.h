@@ -9,8 +9,8 @@ public:
 	glm::vec3 cameraOffset = glm::vec3(0, 2, -5);
 
 	glm::vec3 velocityVector = glm::vec3(0, 0, 0);
-	float friction = 0.9f;
-	float acceleration = 10.f;
-	float maxSpeed = 5.f;
+	float friction = 0.03f;
+	float acceleration = 1.f;
+	float maxSpeed = 50.f;
 
 };
