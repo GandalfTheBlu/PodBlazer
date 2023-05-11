@@ -311,4 +311,22 @@ namespace Engine
 		outMesh.Init(indexBuffer, glPGroups, vertexBuffers, vertexAttributes);
 		return true;
 	}
+
+	bool ReadMapFile(const std::string& path, std::vector<glm::vec2>& outPoints)
+	{
+		std::string text;
+		if (!ReadTextFile(path, text))
+			return false;
+
+		std::regex coordsRgx("\\(([\\-0-9.]+)\\,\\s([\\-0-9.]+)\\)");
+		std::smatch coordsMatch;
+		std::string::const_iterator coordsStart(text.cbegin());
+		while (std::regex_search(coordsStart, text.cend(), coordsMatch, coordsRgx))
+		{
+			float x = std::stof(coordsMatch[1]);
+			float y = std::stof(coordsMatch[2]);
+			outPoints.push_back(glm::vec2(x, y));
+			coordsStart = coordsMatch.suffix().first;
+		}
+	}
 }
