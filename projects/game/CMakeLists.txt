@@ -12,6 +12,8 @@ SET(game_files
 	game_object.cc
 	world_settings.h
 	world_settings.cc
+	player.cc
+	player.h
 )
 SOURCE_GROUP("code" FILES ${game_files})
 

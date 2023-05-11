@@ -2,6 +2,7 @@
 #include "world_settings.h"
 #include <chrono>
 #include "file_reader.h"
+#include "player.h"
 
 namespace Game
 {
@@ -82,6 +83,9 @@ namespace Game
 		float sunAngle = 0.3f;
 		float sunSpeed = 1.f;
 
+		Player* player = new Player(prefabs["astronaut"]);
+		player->transform.position = glm::vec3(-50.f + 70, 0.f, 10.f);
+
 		while (!shouldClose)
 		{
 			auto t0 = std::chrono::steady_clock::now();
@@ -103,11 +107,11 @@ namespace Game
 
 				if (!(axes[1] > -0.05f && axes[1] < 0.05f))
 				{
-					move -= cameraTransform.Forward() * axes[1];
+					move -= player->transform.Forward() * axes[1];
 				}
 				if (!(axes[0] > -0.05f && axes[0] < 0.05f))
 				{
-					move += cameraTransform.Right() * axes[0];
+					move += player->transform.Right() * axes[0];
 				}
 
 
@@ -125,24 +129,32 @@ namespace Game
 
 			if (keys[GLFW_KEY_W].held)
 			{
-				move += cameraTransform.Forward();
+				player->velocityVector += player->transform.Forward() * player->acceleration;
+
 			}
 			if (keys[GLFW_KEY_S].held)
 			{
-				move -= cameraTransform.Forward();
+				player->velocityVector -= player->transform.Forward() * player->acceleration;
 			}
 			if (keys[GLFW_KEY_A].held)
 			{
-				move -= cameraTransform.Right();
+				player->velocityVector -= player->transform.Right() * player->acceleration;
 			}
 			if (keys[GLFW_KEY_D].held)
 			{
-				move += cameraTransform.Right();
+				player->velocityVector += player->transform.Right() * player->acceleration;
+			}
+
+			player->velocityVector *= player->friction;
+			if (glm::length(player->velocityVector) > player->maxSpeed)
+			{
+				player->velocityVector = glm::normalize(player->velocityVector) * player->maxSpeed;
 			}
 
 			if(glm::dot(move, move) > 0.f)
-				cameraTransform.position += glm::normalize(move) * (dt * moveSpeed);
+				player->transform.position+= glm::normalize(player->velocityVector) * dt;
 			
+			/*
 			if (keys[GLFW_KEY_UP].held)
 			{
 				rotX += dt * rotSpeed;
@@ -151,6 +163,7 @@ namespace Game
 			{
 				rotX -= dt * rotSpeed;
 			}
+			*/
 			if (keys[GLFW_KEY_LEFT].held)
 			{
 				rotY -= dt * rotSpeed;
@@ -160,7 +173,7 @@ namespace Game
 				rotY += dt * rotSpeed;
 			}
 
-			cameraTransform.rotation = glm::quat(glm::vec3(0.f, rotY, 0.f)) * glm::quat(glm::vec3(rotX, 0.f, 0.f));
+			player->transform.rotation = glm::quat(glm::vec3(0.f, rotY, 0.f)) * glm::quat(glm::vec3(rotX, 0.f, 0.f));
 
 			if (keys[GLFW_KEY_1].held)
 			{
@@ -182,6 +195,14 @@ namespace Game
 			}
 
 			// render
+			player->Draw(renderer);
+			glm::vec3 forwardOffset = -cameraTransform.Forward() * -player->cameraOffset.z;
+			forwardOffset.y += player->cameraOffset.y;
+			glm::vec3 cameraPosition = player->transform.position +forwardOffset;
+			glm::quat cameraRotation = player->transform.rotation * glm::quat(glm::vec3(0.f, glm::radians(0.0f), 0.f));
+
+			cameraTransform.position = cameraPosition;
+			cameraTransform.rotation = cameraRotation;
 			renderer.SetCamera(camera, cameraTransform);
 			float offset = 0.f;
 			for (auto& obj : gameObjects)
@@ -190,6 +211,7 @@ namespace Game
 				obj->Draw(renderer);
 				offset += 0.3f;
 			}
+
 			renderer.Render();
 
 			window.EndUpdate();
