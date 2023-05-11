@@ -88,7 +88,36 @@ namespace Game
 				break;
 			}
 
+
 			glm::vec3 move = glm::vec3(0.f);
+
+			int gamePadConnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
+			if (gamePadConnected == 1) {
+				int axesCount;
+				const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+
+				if (axes[1]!=0)
+				{
+					move += cameraTransform.Forward() * axes[1];
+				}
+				if (axes[0] != 0)
+				{
+					move -= cameraTransform.Right() * axes[0];
+				}
+
+
+				if (axes[3]!=0)
+				{
+					rotX += dt * rotSpeed * axes[3];
+				}
+				if (axes[2]!=0)
+				{
+					rotY += dt * rotSpeed * axes[2];
+				}
+
+			}
+
+
 			if (keys[GLFW_KEY_W].held)
 			{
 				move += cameraTransform.Forward();
