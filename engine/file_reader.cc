@@ -29,7 +29,7 @@ namespace Engine
 
 	bool LoadOBJFile(Mesh& outMesh, std::vector<ObjMaterialInfo>& outMatInfo, const std::string& path)
 	{
-		std::regex pathRgx("([\\S\\s]*)\\\\.*$");
+		std::regex pathRgx("([\\S\\s]*)\\/.*$");
 		std::smatch pathMatch;
 		if (!std::regex_search(path, pathMatch, pathRgx))
 		{
@@ -56,7 +56,7 @@ namespace Engine
 		// get text from mtl-file
 		std::string mtlFilename = mtlMatch[1];
 		std::string mtlText;
-		if (!ReadTextFile(folderPath + "\\" + mtlFilename, mtlText))
+		if (!ReadTextFile(folderPath + "/" + mtlFilename, mtlText))
 			return false;
 
 		// get all material colors
