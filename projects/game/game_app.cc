@@ -102,13 +102,13 @@ namespace Game
 				}
 				if (axes[0] != 0)
 				{
-					move -= cameraTransform.Right() * axes[0];
+					move += cameraTransform.Right() * axes[0];
 				}
 
 
 				if (axes[3]!=0)
 				{
-					rotX += dt * rotSpeed * axes[3];
+					rotX -= dt * rotSpeed * axes[3];
 				}
 				if (axes[2]!=0)
 				{
