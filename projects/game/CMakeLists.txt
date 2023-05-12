@@ -16,6 +16,8 @@ SET(game_files
 	player.h
 	map_generator.cc
 	map_generator.h
+	materials.h
+	materials.cc
 	point_system.cc
 	point_system.h
 )
