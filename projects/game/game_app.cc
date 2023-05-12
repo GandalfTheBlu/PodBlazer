@@ -69,6 +69,7 @@ namespace Game
 
 		// load all shaders
 		if (!LoadShader("assets/shaders/phong", "phong") ||
+			!LoadShader("assets/shaders/phong_tex", "phong_tex") ||
 			!LoadShader("assets/shaders/skybox", "skybox"))
 			return false;
 
@@ -83,26 +84,33 @@ namespace Game
 			!LoadObjMeshAndMaterials(objPath + "craft_speederC.obj", "ship", "phong"))
 			return false;
 
+		Engine::Resources& RS = Engine::Resources::Instance();
+
+		// load all textures
+		std::shared_ptr<Engine::Texture> texture = std::make_shared<Engine::Texture>();
+		texture->Init("assets/textures/test.png");
+		RS.StoreTexture("test", texture);
+
 		// store custom materials
-		std::shared_ptr<FlatMaterial> roadMaterial = std::make_shared<FlatMaterial>();
-		roadMaterial->shader = Engine::Resources::Instance().GetShader("phong");
-		roadMaterial->color = glm::vec3(0.5f);
-		Engine::Resources::Instance().StoreMaterial("road0", roadMaterial);
+		std::shared_ptr<TextureMaterial> roadMaterial = std::make_shared<TextureMaterial>();
+		roadMaterial->shader = RS.GetShader("phong_tex");
+		roadMaterial->texture = RS.GetTexture("test");
+		RS.StoreMaterial("road0", roadMaterial);
 
 		std::shared_ptr<SkyboxMaterial> skyboxMaterial = std::make_shared<SkyboxMaterial>();
-		skyboxMaterial->shader = Engine::Resources::Instance().GetShader("skybox");
-		Engine::Resources::Instance().StoreMaterial("skybox0", skyboxMaterial);
+		skyboxMaterial->shader = RS.GetShader("skybox");
+		RS.StoreMaterial("skybox0", skyboxMaterial);
 
 		// load road path
 		if (!LoadMapFile("assets/map_data/map.txt", mapData))
 			return false;
 
 		// store custom meshes
-		Engine::Resources::Instance().StoreMesh("road", GenerateRoadMesh(mapData));
+		RS.StoreMesh("road", GenerateRoadMesh(mapData));
 
 		std::shared_ptr<Engine::Mesh> screenQuad = std::make_shared<Engine::Mesh>();
 		screenQuad->ScreenQuad();
-		Engine::Resources::Instance().StoreMesh("skybox", screenQuad);
+		RS.StoreMesh("skybox", screenQuad);
 
 		// create prefabs
 		prefabs["road"] = CreatePrefab("road");

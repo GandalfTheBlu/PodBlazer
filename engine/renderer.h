@@ -15,6 +15,13 @@ namespace Engine
 		std::vector<glm::mat4> Ms;
 		std::vector<glm::mat4> MVPs;
 		
+		// rendering hierarchy:
+		// for each shader in shaders
+		//		for each mesh that uses shader
+		//			for each primitive group in mesh that uses shader
+		//				apply material
+		//				draw primitive group
+
 		struct SubMeshGroup
 		{
 			Material* material;

@@ -28,7 +28,6 @@ namespace Game
 	class TextureMaterial : public Engine::Material
 	{
 	public:
-		glm::vec3 color;
 		float roughness;
 		Engine::Texture* texture;
 

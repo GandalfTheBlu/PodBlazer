@@ -33,6 +33,7 @@ namespace Game
 		std::shared_ptr<Engine::Mesh> mesh = std::make_shared<Engine::Mesh>();
 
 		std::vector<GLfloat> positions;
+		std::vector<GLfloat> uvs;
 		std::vector<GLfloat> normals;
 		std::vector<GLuint> indices;
 
@@ -60,6 +61,11 @@ namespace Game
 			PUSH3(positions, c1.x, 0.f, c1.y);
 			PUSH3(positions, c2.x, 0.f, c2.y);
 			PUSH3(positions, c3.x, 0.f, c3.y);
+
+			PUSH2(uvs, 0.f, 0.f);
+			PUSH2(uvs, 1.f, 0.f);
+			PUSH2(uvs, 0.f, 1.f);
+			PUSH2(uvs, 1.f, 1.f);
 
 			PUSH3(normals, 0.f, 1.f, 0.f);
 			PUSH3(normals, 0.f, 1.f, 0.f);
@@ -94,6 +100,17 @@ namespace Game
 		posAttrib.offset = 0;
 		posAttrib.type = GL_FLOAT;
 
+		Engine::DataBuffer uvBuffer;
+		uvBuffer.bufferStart = (GLubyte*)&uvs[0];
+		uvBuffer.byteSize = sizeof(GLfloat) * uvs.size();
+
+		Engine::VertexAttribute uvAttrib;
+		uvAttrib.location = 1;
+		uvAttrib.components = 2;
+		uvAttrib.stride = 0;
+		uvAttrib.offset = 0;
+		uvAttrib.type = GL_FLOAT;
+
 		Engine::DataBuffer normBuffer;
 		normBuffer.bufferStart = (GLubyte*)&normals[0];
 		normBuffer.byteSize = sizeof(GLfloat) * normals.size();
@@ -105,7 +122,7 @@ namespace Game
 		normAttrib.offset = 0;
 		normAttrib.type = GL_FLOAT;
 
-		mesh->Init(indexBuffer, { indexAttrib }, { posBuffer, normBuffer}, { posAttrib, normAttrib});
+		mesh->Init(indexBuffer, { indexAttrib }, { posBuffer, uvBuffer, normBuffer}, { posAttrib, uvAttrib, normAttrib});
 		return mesh;
 	}
 
