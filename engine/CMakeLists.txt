@@ -19,8 +19,11 @@ SET(engine_files
 	camera.h
 	camera.cc
 	material.h
+	material.cc
 	file_reader.h
 	file_reader.cc
+	resources.h
+	resources.cc
 )
 SOURCE_GROUP("engine" FILES ${engine_files})
 ADD_LIBRARY(engine STATIC ${engine_files})

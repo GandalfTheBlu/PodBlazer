@@ -28,9 +28,9 @@ namespace Game
 #define PUSH3(v, x, y, z) v.push_back(x);v.push_back(y);v.push_back(z)
 #define PUSH2(v, x, y) v.push_back(x);v.push_back(y)
 
-	void GenerateRoad(const std::vector<glm::vec2>& mapData, Prefab*& outPrefab)
+	std::shared_ptr<Engine::Mesh> GenerateRoadMesh(const std::vector<glm::vec2>& mapData)
 	{
-		Engine::Mesh* mesh = new Engine::Mesh();
+		std::shared_ptr<Engine::Mesh> mesh = std::make_shared<Engine::Mesh>();
 
 		std::vector<GLfloat> positions;
 		std::vector<GLfloat> normals;
@@ -106,9 +106,7 @@ namespace Game
 		normAttrib.type = GL_FLOAT;
 
 		mesh->Init(indexBuffer, { indexAttrib }, { posBuffer, normBuffer}, { posAttrib, normAttrib});
-
-
-		outPrefab = new Prefab(mesh, { {glm::vec3(0.5f)} });
+		return mesh;
 	}
 
 	void SpawnSideObjects(const std::vector<glm::vec2>& mapData, const std::vector<Prefab*>& prefabs, std::vector<GameObject*>& outGameObjects)

@@ -2,65 +2,137 @@
 #include "world_settings.h"
 #include <chrono>
 #include "file_reader.h"
-#include "player.h"
 #include "map_generator.h"
+#include "resources.h"
+#include "materials.h"
 
 namespace Game
 {
 	App::App() :
-		shouldClose(false)
+		shouldClose(false),
+		skybox(nullptr),
+		player(nullptr)
 	{}
 
 	App::~App(){}
+
+	// helper methods
+	bool LoadShader(const std::string& path, const std::string& name)
+	{
+		std::shared_ptr<Engine::Shader> shader = std::make_shared<Engine::Shader>();
+		if (!shader->Init(path))
+			return false;
+
+		Engine::Resources::Instance().StoreShader(name, shader);
+		return true;
+	}
+
+	bool LoadObjMeshAndMaterials(const std::string& path, const std::string& name, const std::string& shaderName)
+	{
+		std::shared_ptr<Engine::Mesh> mesh = std::make_shared<Engine::Mesh>();
+		std::vector<Engine::ObjMaterialInfo> materialInfos;
+		if (!Engine::LoadOBJFile(*mesh, materialInfos, path))
+			return false;
+
+		Engine::Resources::Instance().StoreMesh(name, mesh);
+
+		int i = 0;
+		for (auto& matInfo : materialInfos)
+		{
+			std::shared_ptr<FlatMaterial> material = std::make_shared<FlatMaterial>();
+			material->shader = Engine::Resources::Instance().GetShader(shaderName);
+			material->color = matInfo.color;
+			Engine::Resources::Instance().StoreMaterial(name + std::to_string(i), material);
+			i++;
+		}
+
+		return true;
+	}
+
+	Prefab* CreatePrefab(const std::string& name)
+	{
+		Engine::Mesh* mesh = Engine::Resources::Instance().GetMesh(name);
+		std::vector<Engine::Material*> materials;
+
+		for (size_t i = 0; i < mesh->primitiveGroups.size(); i++)
+		{
+			materials.push_back(Engine::Resources::Instance().GetMaterial(name + std::to_string(i)));
+		}
+
+		return new Prefab(mesh, materials);
+	}
 
 	bool App::Open()
 	{
 		if (!window.Init(1400, 1000, "Pod Blazer"))
 			return false;
 
-		if (!Prefab::Init("assets/shaders/phong"))
+		// load all shaders
+		if (!LoadShader("assets/shaders/phong", "phong") ||
+			!LoadShader("assets/shaders/skybox", "skybox"))
 			return false;
 
-		if (!skyboxShader.Init("assets/shaders/skybox"))
+		std::string objPath = "assets/kenney_space-kit/Models/OBJ format/";
+
+		// load all meshes and materials from obj files
+		if (!LoadObjMeshAndMaterials(objPath + "rock_crystals.obj", "rock1", "phong") ||
+			!LoadObjMeshAndMaterials(objPath + "rock_crystalsLargeA.obj", "rock2", "phong") ||
+			!LoadObjMeshAndMaterials(objPath + "rock_largeA.obj", "rock3", "phong") ||
+			!LoadObjMeshAndMaterials(objPath + "satelliteDish.obj", "parabola", "phong") ||
+			!LoadObjMeshAndMaterials(objPath + "terrain.obj", "ground", "phong") ||
+			!LoadObjMeshAndMaterials(objPath + "craft_speederC.obj", "ship", "phong"))
 			return false;
 
+		// store custom materials
+		std::shared_ptr<FlatMaterial> roadMaterial = std::make_shared<FlatMaterial>();
+		roadMaterial->shader = Engine::Resources::Instance().GetShader("phong");
+		roadMaterial->color = glm::vec3(0.5f);
+		Engine::Resources::Instance().StoreMaterial("road0", roadMaterial);
+
+		std::shared_ptr<SkyboxMaterial> skyboxMaterial = std::make_shared<SkyboxMaterial>();
+		skyboxMaterial->shader = Engine::Resources::Instance().GetShader("skybox");
+		Engine::Resources::Instance().StoreMaterial("skybox0", skyboxMaterial);
+
+		// load road path
 		if (!LoadMapFile("assets/map_data/map.txt", mapData))
 			return false;
 
-		Prefab* mapPrefab = nullptr;
-		GenerateRoad(mapData, mapPrefab);
-		prefabs["map"] = mapPrefab;
-		GameObject* road = new GameObject(mapPrefab);
-		road->cull = false;
+		// store custom meshes
+		Engine::Resources::Instance().StoreMesh("road", GenerateRoadMesh(mapData));
+
+		std::shared_ptr<Engine::Mesh> screenQuad = std::make_shared<Engine::Mesh>();
+		screenQuad->ScreenQuad();
+		Engine::Resources::Instance().StoreMesh("skybox", screenQuad);
+
+		// create prefabs
+		prefabs["road"] = CreatePrefab("road");
+		prefabs["ground"] = CreatePrefab("ground");
+		prefabs["skybox"] = CreatePrefab("skybox");
+		prefabs["rock1"] = CreatePrefab("rock1");
+		prefabs["rock2"] = CreatePrefab("rock2");
+		prefabs["rock3"] = CreatePrefab("rock3");
+		prefabs["parabola"] = CreatePrefab("parabola");
+		prefabs["ship"] = CreatePrefab("ship");
+
+		// create gameobjects
+		GameObject* road = new GameObject(prefabs["road"]);
+		road->cullable = false;
 		gameObjects.push_back(road);
 
-		prefabs["rock1"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_crystals.obj");
-		prefabs["rock2"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_crystalsLargeA.obj");
-		prefabs["rock3"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/rock_largeA.obj");
-		prefabs["satellite"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/satelliteDish.obj");
+		SpawnSideObjects(mapData, {prefabs["rock1"], prefabs["rock2"], prefabs["rock3"], prefabs["parabola"]}, gameObjects);
 
-		SpawnSideObjects(mapData, {prefabs["rock1"], prefabs["rock2"], prefabs["rock3"], prefabs["satellite"]}, gameObjects);
-
-		prefabs["ground"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/terrain.obj");
 		GameObject* ground = new GameObject(prefabs["ground"]);
 		ground->transform.scale *= 500.f;
 		ground->transform.position.y = -0.1f;
-		ground->cull = false;
+		ground->cullable = false;
 		gameObjects.push_back(ground);
 
-		renderer.Init({
-			&skyboxShader,
-			[](const Engine::MaterialBindInput& inp)
-			{
-				glm::mat3 invMVP = glm::inverse(glm::mat3(inp.MVP));
-				inp.shader->SetMat3("u_invMVP", &invMVP[0][0]);
-				inp.shader->SetVec3("u_lightDir", &WorldSettings::Instance().directionalLight[0]);
-			},
-			nullptr
-		});
+		player = new Player(prefabs["ship"]);
+		gameObjects.push_back(player);
 
-		prefabs["ship"] = new Prefab("assets/kenney_space-kit/Models/OBJ format/craft_speederC.obj");
+		skybox = new GameObject(prefabs["skybox"]);
 
+		// setup camera
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
 
 		return true;
@@ -94,9 +166,6 @@ namespace Game
 		float moveSpeed = 10.f;
 		float sunAngle = 0.3f;
 		float sunSpeed = 1.f;
-
-		Player* player = new Player(prefabs["ship"]);
-		gameObjects.push_back(player);
 
 		Engine::Transform cameraTransform;
 		cameraTransform.position = player->cameraOffset;
@@ -227,12 +296,16 @@ namespace Game
 
 			// render
 			renderer.SetCamera(camera, cameraTransform);
+
+			skybox->Draw(renderer);
+			renderer.Render();
+
 			for (auto& obj : gameObjects)
 			{
 				glm::vec3 toObj = obj->transform.position - cameraTransform.position;
 
 				// culling
-				if (obj->cull && (
+				if (obj->cullable && (
 					glm::dot(toObj, toObj) > maxRenderDist * maxRenderDist ||
 					glm::dot(toObj, cameraTransform.Forward()) < 0.f
 				))
@@ -265,9 +338,10 @@ namespace Game
 		for (auto& e : gameObjects)
 			delete e;
 
-		skyboxShader.Deinit();
-		renderer.Deinit();
-		Prefab::Deinit();
+		delete skybox;
+
+		Engine::Resources::Instance().CleanUp();
+
 		window.Deinit();
 	}
 }

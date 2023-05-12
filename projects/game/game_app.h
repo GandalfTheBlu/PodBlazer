@@ -3,6 +3,7 @@
 #include "renderer.h"
 #include "game_object.h"
 #include "../exts/glm/vec2.hpp"
+#include "player.h"
 
 namespace Game
 {
@@ -15,10 +16,11 @@ namespace Game
 		Engine::Renderer renderer;
 		Engine::Camera camera;
 
-		Engine::Shader skyboxShader;
-
 		std::unordered_map<std::string, Prefab*> prefabs;
 		std::vector<GameObject*> gameObjects;
+
+		GameObject* skybox;
+		Player* player;
 
 		std::vector<glm::vec2> mapData;
 

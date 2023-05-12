@@ -3,28 +3,19 @@
 #include "material.h"
 #include "mesh.h"
 #include "renderer.h"
-#include <unordered_map>
+#include <vector>
 #include "file_reader.h"
 
 namespace Game
 {
-	class Prefab
+	class Prefab final
 	{
-	private:
-		static Engine::Shader phongShader;
-
-		Prefab() = delete;
-
 	public:
 		Engine::Mesh* mesh;
-		std::vector<Engine::Material> materials;
+		std::vector<Engine::Material*> materials;
 
-		Prefab(const std::string& meshPath);
-		Prefab(Engine::Mesh* newMesh, const std::vector<Engine::ObjMaterialInfo>& materialInfos);
+		Prefab(Engine::Mesh* _mesh, const std::vector<Engine::Material*>& _materials);
 		~Prefab();
-
-		static bool Init(const std::string& phongShaderPath);
-		static void Deinit();
 	};
 
 	class GameObject
@@ -36,7 +27,7 @@ namespace Game
 
 	public:
 		Engine::Transform transform;
-		bool cull;
+		bool cullable;
 
 		GameObject(Prefab* _prefab);
 		virtual ~GameObject();

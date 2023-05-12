@@ -1,25 +1,25 @@
 #pragma once
 #include "shader.h"
 #include "../exts/glm/matrix.hpp"
-#include <functional>
 
 namespace Engine
 {
-	struct MaterialBindInput
+	struct MaterialInput
 	{
-		Shader* shader;
 		glm::mat4 camTransform;
 		glm::mat4 M;
 		glm::mat4 MVP;
 	};
 
-	typedef std::function<void(const MaterialBindInput&)> MaterialBindFunction;
-	typedef std::function<void()> MaterialUnbindFunction;
-
-	struct Material
+	class Material
 	{
+	public:
 		Shader* shader;
-		MaterialBindFunction Bind;
-		MaterialUnbindFunction Unbind;
+		
+		Material();
+		virtual ~Material();
+
+		virtual void Apply(const MaterialInput& input) = 0;
+		virtual void CleanUp();
 	};
 }

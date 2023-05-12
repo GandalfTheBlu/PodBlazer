@@ -1,11 +1,9 @@
 #pragma once
-#include "shader.h"
 #include "mesh.h"
 #include "material.h"
 #include "transform.h"
 #include "camera.h"
 #include <unordered_map>
-#include <functional>
 
 namespace Engine
 {
@@ -16,30 +14,27 @@ namespace Engine
 		glm::mat4 VP;
 		std::vector<glm::mat4> Ms;
 		std::vector<glm::mat4> MVPs;
-
-		Mesh skyboxMesh;
-		Material skyboxMaterial;
-
-		struct RenderNode
+		
+		struct SubMeshGroup
 		{
-			Mesh* mesh;
-			size_t primitiveGroupIndex;
+			Material* material;
 			size_t transformIndex;
-			MaterialBindFunction Bind;
-			MaterialUnbindFunction Unbind;
+			size_t subMeshIndex;
 		};
 
-		std::unordered_map<Shader*, std::vector<RenderNode>> renderNodes;
+		struct ShaderGroup
+		{
+			std::unordered_map<Mesh*, std::vector<SubMeshGroup>> subMeshGroups;
+		};
+
+		std::unordered_map<Shader*, ShaderGroup> shaderGroups;
 
 	public:
 		Renderer();
 		~Renderer();
 
-		void Init(const Material& _skyboxMaterial);
-		void Deinit();
-
 		void SetCamera(const Camera& camera, const Transform& _cameraTransform);
-		void Draw(Mesh* mesh, const std::vector<Material>& materials, const Transform& transform);
+		void Draw(Mesh* mesh, const std::vector<Material*>& materials, const Transform& transform);
 		void Render();
 	};
 }

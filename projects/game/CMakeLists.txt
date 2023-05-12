@@ -14,6 +14,8 @@ SET(game_files
 	world_settings.cc
 	player.cc
 	player.h
+	materials.h
+	materials.cc
 map_generator.cc
 map_generator.h
 )
