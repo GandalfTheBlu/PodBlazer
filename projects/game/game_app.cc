@@ -67,6 +67,9 @@ namespace Game
 		if (!window.Init(1400, 1000, "Pod Blazer"))
 			return false;
 
+		if (!renderer.Init(window.Width() / 6, window.Height() / 6))
+			return false;
+
 		// load all shaders
 		if (!LoadShader("assets/shaders/phong", "phong") ||
 			!LoadShader("assets/shaders/phong_tex", "phong_tex") ||
@@ -306,7 +309,7 @@ namespace Game
 			renderer.SetCamera(camera, cameraTransform);
 
 			skybox->Draw(renderer);
-			renderer.Render();
+			renderer.ExecuteDrawCalls();
 
 			for (auto& obj : gameObjects)
 			{
@@ -322,7 +325,8 @@ namespace Game
 				obj->Draw(renderer);
 			}
 
-			renderer.Render();
+			renderer.ExecuteDrawCalls();
+			renderer.RenderToScreen(window.Width(), window.Height());
 
 			window.EndUpdate();
 
@@ -349,6 +353,8 @@ namespace Game
 		delete skybox;
 
 		Engine::Resources::Instance().CleanUp();
+
+		renderer.Deinit();
 
 		window.Deinit();
 	}

@@ -10,6 +10,12 @@ namespace Engine
 	class Renderer
 	{
 	private:
+		GLsizei resolutionX;
+		GLsizei resolutionY;
+		GLuint framebuffer;
+		GLuint colorBuffer;
+		GLuint depthBuffer;
+
 		glm::mat4 cameraTransform;
 		glm::mat4 VP;
 		std::vector<glm::mat4> Ms;
@@ -40,8 +46,12 @@ namespace Engine
 		Renderer();
 		~Renderer();
 
+		bool Init(GLsizei _resolutionX, GLsizei _resolutionY);
+		void Deinit();
+
 		void SetCamera(const Camera& camera, const Transform& _cameraTransform);
-		void Draw(Mesh* mesh, const std::vector<Material*>& materials, const Transform& transform);
-		void Render();
+		void PushDrawCall(Mesh* mesh, const std::vector<Material*>& materials, const Transform& transform);
+		void ExecuteDrawCalls();
+		void RenderToScreen(GLsizei windowWidth, GLsizei windowHeight);
 	};
 }

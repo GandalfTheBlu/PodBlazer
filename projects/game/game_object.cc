@@ -19,6 +19,6 @@ namespace Game
 
 	void GameObject::Draw(Engine::Renderer& renderer)
 	{
-		renderer.Draw(prefab->mesh, prefab->materials, transform);
+		renderer.PushDrawCall(prefab->mesh, prefab->materials, transform);
 	}
 }
