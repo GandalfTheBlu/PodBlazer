@@ -1,5 +1,5 @@
 #include "shader.h"
-#include "file_reader.h"
+#include "file_manager.h"
 #include <stdio.h>
 
 namespace Engine
@@ -130,6 +130,12 @@ namespace Engine
 	{
 		AddLocationIfNeeded(name);
 		glUniform1f(nameToLocation[name], value);
+	}
+
+	void Shader::SetVec2(const std::string& name, const GLfloat* valuePtr)
+	{
+		AddLocationIfNeeded(name);
+		glUniform2fv(nameToLocation[name], 1, valuePtr);
 	}
 
 	void Shader::SetVec3(const std::string& name, const GLfloat* valuePtr)

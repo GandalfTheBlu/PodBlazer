@@ -28,5 +28,8 @@ namespace Engine
 
 		void Bind(GLuint binding) const;
 		void Unbind(GLuint binding) const;
+
+		GLint Width();
+		GLint Height();
 	};
 }

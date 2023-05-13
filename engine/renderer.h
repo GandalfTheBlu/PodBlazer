@@ -1,5 +1,6 @@
 #pragma once
 #include "mesh.h"
+#include "texture.h"
 #include "material.h"
 #include "transform.h"
 #include "camera.h"

@@ -1,4 +1,4 @@
-#include "file_reader.h"
+#include "file_manager.h"
 #include <fstream>
 #include <sstream>
 #include "../exts/glm/vec3.hpp"
@@ -25,6 +25,19 @@ namespace Engine
 		file.close();
 
 		return true;
+	}
+
+	void WriteTextFile(const std::string& path, const std::string& text, bool append)
+	{
+		std::ofstream file;
+		if (append)
+			file.open(path, std::ios::app);
+		else
+			file.open(path);
+
+		file << text;
+
+		file.close();
 	}
 
 	bool LoadOBJFile(Mesh& outMesh, std::vector<ObjMaterialInfo>& outMatInfo, const std::string& path)

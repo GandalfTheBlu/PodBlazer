@@ -1,5 +1,6 @@
 #pragma once
 #include "material.h"
+#include "../exts/glm/vec2.hpp"
 #include "../exts/glm/vec3.hpp"
 #include "texture.h"
 

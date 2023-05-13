@@ -1,7 +1,7 @@
 #include "game_app.h"
 #include "world_settings.h"
 #include <chrono>
-#include "file_reader.h"
+#include "file_manager.h"
 #include "map_generator.h"
 #include "resources.h"
 #include "materials.h"
@@ -67,13 +67,14 @@ namespace Game
 		if (!window.Init(1400, 1000, "Pod Blazer"))
 			return false;
 
-		if (!renderer.Init(window.Width() / 6, window.Height() / 6))
+		if (!renderer.Init(window.Width() / 2, window.Height() / 2))
 			return false;
 
 		// load all shaders
 		if (!LoadShader("assets/shaders/phong", "phong") ||
 			!LoadShader("assets/shaders/phong_tex", "phong_tex") ||
-			!LoadShader("assets/shaders/skybox", "skybox"))
+			!LoadShader("assets/shaders/skybox", "skybox") ||
+			!LoadShader("assets/shaders/font", "font"))
 			return false;
 
 		std::string objPath = "assets/kenney_space-kit/Models/OBJ format/";
@@ -93,6 +94,10 @@ namespace Game
 		std::shared_ptr<Engine::Texture> texture = std::make_shared<Engine::Texture>();
 		texture->Init("assets/textures/test.png");
 		RS.StoreTexture("test", texture);
+
+		std::shared_ptr<Engine::Texture> fontTexture = std::make_shared<Engine::Texture>();
+		fontTexture->Init("assets/textures/font64.png");
+		RS.StoreTexture("font", fontTexture);
 
 		// store custom materials
 		std::shared_ptr<TextureMaterial> roadMaterial = std::make_shared<TextureMaterial>();
@@ -143,6 +148,9 @@ namespace Game
 
 		skybox = new GameObject(prefabs["skybox"]);
 
+		// setup text renderer
+		textRenderer.Init(RS.GetShader("font"), RS.GetTexture("font"), screenQuad.get(), glm::vec2(51.2f, 64.f));
+
 		// setup camera
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
 
@@ -180,6 +188,11 @@ namespace Game
 
 		Engine::Transform cameraTransform;
 		cameraTransform.position = player->cameraOffset;
+
+		Engine::Transform textTransform;
+		float w = (float)window.Width();
+		float h = (float)window.Height();
+		textTransform.scale = glm::vec3((w / h, 1.f, 1.f)) * (64.f / h);
 
 		float maxRenderDist = 50.f;
 
@@ -324,8 +337,10 @@ namespace Game
 
 				obj->Draw(renderer);
 			}
-
 			renderer.ExecuteDrawCalls();
+			
+			textRenderer.DrawText("ABC\n123!", textTransform, glm::vec3(1.f, 0.5f, 0.5f));
+
 			renderer.RenderToScreen(window.Width(), window.Height());
 
 			window.EndUpdate();

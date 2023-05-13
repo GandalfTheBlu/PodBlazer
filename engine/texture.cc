@@ -81,4 +81,14 @@ namespace Engine
 		glActiveTexture(binding);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+
+	GLint Texture::Width()
+	{
+		return width;
+	}
+
+	GLint Texture::Height()
+	{
+		return height;
+	}
 }

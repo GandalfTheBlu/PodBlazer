@@ -20,8 +20,8 @@ SET(engine_files
 	camera.cc
 	material.h
 	material.cc
-	file_reader.h
-	file_reader.cc
+	file_manager.h
+	file_manager.cc
 	resources.h
 	resources.cc
 )

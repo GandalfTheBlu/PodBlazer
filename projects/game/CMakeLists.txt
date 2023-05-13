@@ -20,6 +20,8 @@ SET(game_files
 	materials.cc
 	point_system.cc
 	point_system.h
+	text_renderer.h
+	text_renderer.cc
 )
 SOURCE_GROUP("code" FILES ${game_files})
 

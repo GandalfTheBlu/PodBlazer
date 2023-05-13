@@ -2,7 +2,7 @@
 #include "window.h"
 #include "renderer.h"
 #include "game_object.h"
-#include "../exts/glm/vec2.hpp"
+#include "text_renderer.h"
 #include "player.h"
 
 namespace Game
@@ -14,6 +14,7 @@ namespace Game
 		bool shouldClose;
 
 		Engine::Renderer renderer;
+		TextRenderer textRenderer;
 		Engine::Camera camera;
 
 		std::unordered_map<std::string, Prefab*> prefabs;

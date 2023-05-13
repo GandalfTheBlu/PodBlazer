@@ -13,5 +13,6 @@ namespace Engine
 	};
 
 	bool ReadTextFile(const std::string& path, std::string& text);
+	void WriteTextFile(const std::string& path, const std::string& text, bool append);
 	bool LoadOBJFile(Mesh& outMesh, std::vector<ObjMaterialInfo>& outMatInfo, const std::string& path);
 }
