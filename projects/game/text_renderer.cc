@@ -16,7 +16,7 @@ namespace Game
 		screenQuad = _screenQuad;
 		fontSize = _fontSize;
 
-		const char* chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:!?";
+		const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:!?";
 		int width = fontTexture->Width();
 		int height = fontTexture->Height();
 
@@ -28,26 +28,34 @@ namespace Game
 			for (int i = 0; i < countX; i++)
 			{
 				int index = j * countX + i;
-				glm::vec2 pos = fontSize * glm::vec2(i, countY - j - 1);
+				if (index > chars.size())
+					return;
 
-				charToPosition[chars[index]] = pos;
+				charToPosition[chars[index]] = fontSize * glm::vec2(i, countY - j - 1);
 			}
 		}
 	}
 
-	void TextRenderer::DrawText(const std::string& text, const Engine::Transform& transform, const glm::vec3& color)
+	void TextRenderer::DrawText(const std::string& text, const glm::mat4& transform, const glm::vec3& color, bool checkDepth)
 	{
-		Engine::Transform charTransform = transform;
-
 		shader->Use();
 		fontTexture->Bind(GL_TEXTURE0);
 		screenQuad->Bind();
+
+		if (!checkDepth)
+		{
+			glDisable(GL_DEPTH_TEST);
+		}
 		glDepthMask(GL_FALSE);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glm::vec2 texSize = glm::vec2(fontTexture->Width(), fontTexture->Height());
-		glm::mat4 M = charTransform.CalcMatrix();
+		glm::vec2 size = fontSize / texSize;
+
+		shader->SetMat4("u_transform", &transform[0][0]);
+		shader->SetVec2("u_charSize", &size[0]);
+		shader->SetVec3("u_color", &color[0]);
 
 		int line = 0;
 		int col = 0;
@@ -73,16 +81,13 @@ namespace Game
 				continue;
 			
 			glm::vec2 pos = charToPosition[c] / texSize;
-			glm::vec2 size = fontSize / texSize;
 			// move one screen width to the right for each character
 			// and let the scale handle the rest
 			glm::vec2 localOffset = glm::vec2(col * 2.f, -line * 2.f);
 
-			shader->SetMat4("u_M", &M[0][0]);
+			
 			shader->SetVec2("u_localOffset", &localOffset[0]);
 			shader->SetVec2("u_charPosition", &pos[0]);
-			shader->SetVec2("u_charSize", &size[0]);
-			shader->SetVec3("u_color", &color[0]);
 
 			screenQuad->Draw(0);
 
@@ -92,6 +97,7 @@ namespace Game
 		screenQuad->Unbind();
 		fontTexture->Unbind(GL_TEXTURE0);
 		shader->StopUsing();
+		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
 		glDisable(GL_BLEND);
 	}

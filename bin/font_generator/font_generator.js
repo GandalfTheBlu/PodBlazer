@@ -19,6 +19,7 @@ function generateFont()
 	draw.fillStyle = "white";
 	let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:!?";
 	let charSize = vec2(51.2, 64);
+	let yOffset = 12;
 	let charCount = vec2(Math.floor(screen.x/charSize.x), Math.floor(screen.y/charSize.y));
 
 	for(let j=0; j<charCount.y; j++)
@@ -29,7 +30,7 @@ function generateFont()
 			if(index >= chars.length)
 				return;
 			
-			draw.fillText(chars[index], i * charSize.x, (j + 1) * charSize.y);
+			draw.fillText(chars[index], i * charSize.x, (j + 1) * charSize.y - yOffset);
 		}
 	}
 }

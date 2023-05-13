@@ -2,7 +2,7 @@
 #include "mesh.h"
 #include "shader.h"
 #include "texture.h"
-#include "transform.h"
+#include "../exts/glm/matrix.hpp"
 #include "../exts/glm/vec2.hpp"
 #include <unordered_map>
 #include <string>
@@ -24,6 +24,6 @@ namespace Game
 
 		void Init(Engine::Shader* _shader, Engine::Texture* _fontTexture, Engine::Mesh* _screenQuad, const glm::vec2& _fontSize);
 
-		void DrawText(const std::string& text, const Engine::Transform& transform, const glm::vec3& color);
+		void DrawText(const std::string& text, const glm::mat4& transform, const glm::vec3& color, bool checkDepth = false);
 	};
 }

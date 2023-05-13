@@ -189,10 +189,15 @@ namespace Game
 		Engine::Transform cameraTransform;
 		cameraTransform.position = player->cameraOffset;
 
-		Engine::Transform textTransform;
+		Engine::Transform textTransform1;
 		float w = (float)window.Width();
 		float h = (float)window.Height();
-		textTransform.scale = glm::vec3((w / h, 1.f, 1.f)) * (64.f / h);
+		textTransform1.position = glm::vec3(-0.7f, 0.8f, 0.f);
+		textTransform1.scale = glm::vec3(w / h, 1.f, 1.f) * (0.4f * 64.f / h);
+
+		Engine::Transform textTransform2;
+		textTransform2.scale = glm::vec3(w / h, 1.f, 1.f);
+		textTransform2.position = glm::vec3(-5.f, 2.5f, 6.f);
 
 		float maxRenderDist = 50.f;
 
@@ -339,7 +344,12 @@ namespace Game
 			}
 			renderer.ExecuteDrawCalls();
 			
-			textRenderer.DrawText("Q UVW\n0123!", textTransform, glm::vec3(1.f, 0.5f, 0.5f));
+			// 2D text
+			textRenderer.DrawText("fps:" + std::to_string(int(100.f/dt)/100), textTransform1.CalcMatrix(), glm::vec3(1.f));
+
+			// 3D text
+			glm::mat4 VP = camera.CalcP() * camera.CalcV(cameraTransform);
+			textRenderer.DrawText("Start!", VP * textTransform2.CalcMatrix(), glm::vec3(1.f, 0.8f, 0.f), true);
 
 			renderer.RenderToScreen(window.Width(), window.Height());
 

@@ -13,8 +13,9 @@ out vec4 Color;
 
 void main()
 {
-	vec2 margin = vec2(0.9);
-	vec2 coords = u_charPosition + min(v_uv, margin) * u_charSize;
+	vec2 padding1 = vec2(0.01, 0.);
+	vec2 padding2 = vec2(1., 0.99);
+	vec2 coords = u_charPosition + clamp(v_uv, padding1, padding2) * u_charSize;
 	float alpha = texture(u_fontTexture, coords).r;
 	Color = vec4(u_color, alpha);
 }
