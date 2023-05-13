@@ -16,7 +16,7 @@ namespace Game
 		screenQuad = _screenQuad;
 		fontSize = _fontSize;
 
-		const char* chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!?";
+		const char* chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:!?";
 		int width = fontTexture->Width();
 		int height = fontTexture->Height();
 
@@ -41,8 +41,10 @@ namespace Game
 
 		shader->Use();
 		fontTexture->Bind(GL_TEXTURE0);
-		glDepthMask(GL_FALSE);
 		screenQuad->Bind();
+		glDepthMask(GL_FALSE);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		glm::vec2 texSize = glm::vec2(fontTexture->Width(), fontTexture->Height());
 		glm::mat4 M = charTransform.CalcMatrix();
@@ -58,6 +60,13 @@ namespace Game
 			{
 				line++;
 				col = 0;
+				continue;
+			}
+			
+			if (c == ' ')
+			{
+				col++;
+				continue;
 			}
 
 			if (charToPosition.count(c) == 0)
@@ -82,7 +91,8 @@ namespace Game
 
 		screenQuad->Unbind();
 		fontTexture->Unbind(GL_TEXTURE0);
-		glDepthMask(GL_TRUE);
 		shader->StopUsing();
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
 	}
 }

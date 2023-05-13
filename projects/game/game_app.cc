@@ -339,7 +339,7 @@ namespace Game
 			}
 			renderer.ExecuteDrawCalls();
 			
-			textRenderer.DrawText("ABC\n123!", textTransform, glm::vec3(1.f, 0.5f, 0.5f));
+			textRenderer.DrawText("Q UVW\n0123!", textTransform, glm::vec3(1.f, 0.5f, 0.5f));
 
 			renderer.RenderToScreen(window.Width(), window.Height());
 

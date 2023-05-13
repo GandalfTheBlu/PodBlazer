@@ -13,13 +13,8 @@ out vec4 Color;
 
 void main()
 {
-	vec2 coords = u_charPosition + v_uv * u_charSize;
-	vec3 col = texture(u_fontTexture, coords).rgb * u_color;
-	
-	if(max(col.r, max(col.g, col.b)) < 0.01)
-	{
-		discard;
-	}
-	
-	Color = vec4(col, 1.);
+	vec2 margin = vec2(0.9);
+	vec2 coords = u_charPosition + min(v_uv, margin) * u_charSize;
+	float alpha = texture(u_fontTexture, coords).r;
+	Color = vec4(u_color, alpha);
 }
