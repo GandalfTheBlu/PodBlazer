@@ -137,7 +137,7 @@ namespace Engine
 			std::string indices;
 		};
 		std::vector<ObjPGroupStr> objPGroupStrings;
-		std::regex pGroupRgx("usemtl\\s(.*)\\s*([f\\s0-9\\/]+)");
+		std::regex pGroupRgx("usemtl\\s(.*)[\\S\\s]*?f\\s([f\\s0-9\\/]+)");
 		std::smatch pGroupMatch;
 		std::string::const_iterator pGroupStart(objText.cbegin());
 		while (std::regex_search(pGroupStart, objText.cend(), pGroupMatch, pGroupRgx))

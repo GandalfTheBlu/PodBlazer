@@ -49,6 +49,28 @@ namespace Game
 		return true;
 	}
 
+	bool LoadObjMeshAndMaterialsTextured(const std::string& path, const std::string& name, const std::string& shaderName, const std::string& textureName)
+	{
+		std::shared_ptr<Engine::Mesh> mesh = std::make_shared<Engine::Mesh>();
+		std::vector<Engine::ObjMaterialInfo> materialInfos;
+		if (!Engine::LoadOBJFile(*mesh, materialInfos, path))
+			return false;
+
+		Engine::Resources::Instance().StoreMesh(name, mesh);
+
+		int i = 0;
+		for (auto& matInfo : materialInfos)
+		{
+			std::shared_ptr<TextureMaterial> material = std::make_shared<TextureMaterial>();
+			material->shader = Engine::Resources::Instance().GetShader(shaderName);
+			material->texture = Engine::Resources::Instance().GetTexture(textureName);
+			Engine::Resources::Instance().StoreMaterial(name + std::to_string(i), material);
+			i++;
+		}
+
+		return true;
+	}
+
 	Prefab* CreatePrefab(const std::string& name)
 	{
 		Engine::Mesh* mesh = Engine::Resources::Instance().GetMesh(name);
@@ -77,6 +99,21 @@ namespace Game
 			!LoadShader("assets/shaders/font", "font"))
 			return false;
 
+		Engine::Resources& RS = Engine::Resources::Instance();
+
+		// load all textures
+		std::shared_ptr<Engine::Texture> roadTexture = std::make_shared<Engine::Texture>();
+		roadTexture->Init("assets/textures/test.png");
+		RS.StoreTexture("road", roadTexture);
+
+		std::shared_ptr<Engine::Texture> fontTexture = std::make_shared<Engine::Texture>();
+		fontTexture->Init("assets/textures/font64.png");
+		RS.StoreTexture("font", fontTexture);
+
+		std::shared_ptr<Engine::Texture> lindahliumTexture = std::make_shared<Engine::Texture>();
+		lindahliumTexture->Init("assets/textures/lindahlium.jpg");
+		RS.StoreTexture("lindahlium", lindahliumTexture);
+
 		std::string objPath = "assets/kenney_space-kit/Models/OBJ format/";
 
 		// load all meshes and materials from obj files
@@ -85,24 +122,14 @@ namespace Game
 			!LoadObjMeshAndMaterials(objPath + "rock_largeA.obj", "rock3", "phong") ||
 			!LoadObjMeshAndMaterials(objPath + "satelliteDish.obj", "parabola", "phong") ||
 			!LoadObjMeshAndMaterials(objPath + "terrain.obj", "ground", "phong") ||
-			!LoadObjMeshAndMaterials(objPath + "craft_speederC.obj", "ship", "phong"))
+			!LoadObjMeshAndMaterials(objPath + "craft_speederC.obj", "ship", "phong") ||
+			!LoadObjMeshAndMaterialsTextured("assets/custom_meshes/lindahlium.obj", "lindahlium", "phong_tex", "lindahlium"))
 			return false;
-
-		Engine::Resources& RS = Engine::Resources::Instance();
-
-		// load all textures
-		std::shared_ptr<Engine::Texture> texture = std::make_shared<Engine::Texture>();
-		texture->Init("assets/textures/test.png");
-		RS.StoreTexture("test", texture);
-
-		std::shared_ptr<Engine::Texture> fontTexture = std::make_shared<Engine::Texture>();
-		fontTexture->Init("assets/textures/font64.png");
-		RS.StoreTexture("font", fontTexture);
 
 		// store custom materials
 		std::shared_ptr<TextureMaterial> roadMaterial = std::make_shared<TextureMaterial>();
 		roadMaterial->shader = RS.GetShader("phong_tex");
-		roadMaterial->texture = RS.GetTexture("test");
+		roadMaterial->texture = RS.GetTexture("road");
 		RS.StoreMaterial("road0", roadMaterial);
 
 		std::shared_ptr<SkyboxMaterial> skyboxMaterial = std::make_shared<SkyboxMaterial>();
@@ -129,13 +156,24 @@ namespace Game
 		prefabs["rock3"] = CreatePrefab("rock3");
 		prefabs["parabola"] = CreatePrefab("parabola");
 		prefabs["ship"] = CreatePrefab("ship");
+		prefabs["lindahlium"] = CreatePrefab("lindahlium");
 
 		// create gameobjects
 		GameObject* road = new GameObject(prefabs["road"]);
 		road->cullable = false;
 		gameObjects.push_back(road);
 
-		SpawnSideObjects(mapData, {prefabs["rock1"], prefabs["rock2"], prefabs["rock3"], prefabs["parabola"]}, gameObjects);
+		SpawnSideObjects(mapData, {
+			prefabs["rock1"], 
+			prefabs["rock2"], 
+			prefabs["rock3"], 
+			prefabs["parabola"]
+			}, gameObjects
+		);
+
+		GameObject* lindahlium = new GameObject(prefabs["lindahlium"]);
+		lindahlium->transform.position = glm::vec3(0.f, 0.f, 6.f);
+		gameObjects.push_back(lindahlium);
 
 		GameObject* ground = new GameObject(prefabs["ground"]);
 		ground->transform.scale *= 500.f;

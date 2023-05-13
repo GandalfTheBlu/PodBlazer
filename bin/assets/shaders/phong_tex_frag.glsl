@@ -20,10 +20,11 @@ void main()
 	vec3 ray = normalize(toPoint);
 	float diff = max(0., dot(-u_lightDir, norm));
 	float spec = pow(max(0., dot(reflect(ray, norm), -u_lightDir)), clamp(1.-u_roughness, 1./64., 1.) * 64.);
-	vec3 ground = vec3(0.1, 0.2, 0.1);
+	vec3 ground = vec3(0.2, 0.1, 0.1);
 	vec3 sky = vec3(0.2, 0.2, 0.4);
 	vec3 amb = mix(ground, sky, 0.5 + 0.5 * norm.y) * (1. + max(0., -u_lightDir.y));
-	vec3 col = (vec3(diff + spec) + amb) * texture(u_texture, v_uv).rgb;
+	float occlusion = (u_lightDir.y > 0. ? 0. : 1.);
+	vec3 col = (vec3((diff + spec) * occlusion) + amb) * texture(u_texture, v_uv).rgb;
 	
 	float dist = dot(toPoint, toPoint);
 	float x = clamp(0.001*dist, 0., 1.);
