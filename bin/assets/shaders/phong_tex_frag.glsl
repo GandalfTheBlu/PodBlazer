@@ -6,6 +6,7 @@ layout(binding=0) uniform sampler2D u_texture;
 uniform vec3 u_camPos;
 uniform vec3 u_lightDir;
 uniform float u_roughness;
+uniform vec3 u_exhaustPos;
 
 layout(location=0) in vec3 v_position;
 layout(location=1) in vec2 v_uv;
@@ -31,6 +32,10 @@ void main()
 	float fog = x * x * (3. - 2. * x);
 	vec3 fogCol = mix(vec3(0.7, 0.7, 0.85), vec3(0.1, 0.1, 0.2), 0.5 + 0.5 * u_lightDir.y);
 	col = mix(col, fogCol, fog);
+	
+	vec3 toExhaust = v_position - u_exhaustPos;
+	float bloom = exp(-0.75*dot(toExhaust, toExhaust));
+	col = max(col, vec3(0.9,0.7,0.) * bloom);
 	
 	Color = vec4(col, 1.);
 }

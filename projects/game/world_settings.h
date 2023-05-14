@@ -10,6 +10,8 @@ namespace Game
 		
 	public:
 		glm::vec3 directionalLight;
+		float currentTime;
+		glm::vec3 exhaustPosition;
 
 		static WorldSettings& Instance();
 	};

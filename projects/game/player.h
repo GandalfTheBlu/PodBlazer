@@ -23,7 +23,9 @@ namespace Game
 		float angularFriction = 0.04f;
 		float yAngularVelocity = 0;
 
+		GameObject* exhaust;
 
+		void Update();
 		bool IsColliding(const std::vector<glm::vec2>& mapData, float maxOffset);
 	};
 }

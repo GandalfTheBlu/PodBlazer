@@ -36,6 +36,7 @@ namespace Game
 		shader->SetVec3("u_color", &color[0]);
 		shader->SetFloat("u_roughness", roughness);
 		shader->SetVec3("u_lightDir", &WorldSettings::Instance().directionalLight[0]);
+		shader->SetVec3("u_exhaustPos", &WorldSettings::Instance().exhaustPosition[0]);
 	}
 
 	TextureMaterial::TextureMaterial() :
@@ -54,6 +55,7 @@ namespace Game
 		shader->SetVec3("u_camPos", &camPos[0]);
 		shader->SetFloat("u_roughness", roughness);
 		shader->SetVec3("u_lightDir", &WorldSettings::Instance().directionalLight[0]);
+		shader->SetVec3("u_exhaustPos", &WorldSettings::Instance().exhaustPosition[0]);
 
 		texture->Bind(GL_TEXTURE0);
 	}
@@ -61,5 +63,16 @@ namespace Game
 	void TextureMaterial::CleanUp()
 	{
 		texture->Unbind(GL_TEXTURE0);
+	}
+
+	ParticleMaterial::ParticleMaterial(){}
+
+	void ParticleMaterial::Apply(const Engine::MaterialInput& input)
+	{
+		glm::vec3 localCamPos = glm::inverse(input.M) * input.camTransform[3];
+
+		shader->SetMat4("u_MVP", &input.MVP[0][0]);
+		shader->SetFloat("u_time", WorldSettings::Instance().currentTime);
+		shader->SetVec3("u_localCamPos", &localCamPos[0]);
 	}
 }

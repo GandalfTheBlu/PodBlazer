@@ -27,6 +27,18 @@ namespace Game
 		return true;
 	}
 
+	bool LoadObjMeshNoMaterial(const std::string& path, const std::string& name)
+	{
+		std::shared_ptr<Engine::Mesh> mesh = std::make_shared<Engine::Mesh>();
+		std::vector<Engine::ObjMaterialInfo> unused;
+		if (!Engine::LoadOBJFile(*mesh, unused, path))
+			return false;
+
+		Engine::Resources::Instance().StoreMesh(name, mesh);
+
+		return true;
+	}
+
 	bool LoadObjMeshAndMaterials(const std::string& path, const std::string& name, const std::string& shaderName)
 	{
 		std::shared_ptr<Engine::Mesh> mesh = std::make_shared<Engine::Mesh>();
@@ -89,14 +101,15 @@ namespace Game
 		if (!window.Init(1400, 1000, "Pod Blazer"))
 			return false;
 
-		if (!renderer.Init(window.Width() / 2, window.Height() / 2))
+		if (!renderer.Init(window.Width() / 4, window.Height() / 4))
 			return false;
 
 		// load all shaders
 		if (!LoadShader("assets/shaders/phong", "phong") ||
 			!LoadShader("assets/shaders/phong_tex", "phong_tex") ||
 			!LoadShader("assets/shaders/skybox", "skybox") ||
-			!LoadShader("assets/shaders/font", "font"))
+			!LoadShader("assets/shaders/font", "font") ||
+			!LoadShader("assets/shaders/particle", "flames"))
 			return false;
 
 		Engine::Resources& RS = Engine::Resources::Instance();
@@ -123,7 +136,8 @@ namespace Game
 			!LoadObjMeshAndMaterials(objPath + "satelliteDish.obj", "parabola", "phong") ||
 			!LoadObjMeshAndMaterials(objPath + "terrain.obj", "ground", "phong") ||
 			!LoadObjMeshAndMaterials(objPath + "craft_speederC.obj", "ship", "phong") ||
-			!LoadObjMeshAndMaterialsTextured("assets/custom_meshes/lindahlium.obj", "lindahlium", "phong_tex", "lindahlium"))
+			!LoadObjMeshAndMaterialsTextured("assets/custom_meshes/lindahlium.obj", "lindahlium", "phong_tex", "lindahlium") ||
+			!LoadObjMeshNoMaterial("assets/custom_meshes/unit_cube.obj", "flames"))
 			return false;
 
 		// store custom materials
@@ -135,6 +149,11 @@ namespace Game
 		std::shared_ptr<SkyboxMaterial> skyboxMaterial = std::make_shared<SkyboxMaterial>();
 		skyboxMaterial->shader = RS.GetShader("skybox");
 		RS.StoreMaterial("skybox0", skyboxMaterial);
+
+		std::shared_ptr<ParticleMaterial> particleMaterial = std::make_shared<ParticleMaterial>();
+		particleMaterial->shader = RS.GetShader("flames");
+		RS.StoreMaterial("flames0", particleMaterial);
+		
 
 		// load road path
 		if (!LoadMapFile("assets/map_data/map.txt", mapData))
@@ -157,6 +176,7 @@ namespace Game
 		prefabs["parabola"] = CreatePrefab("parabola");
 		prefabs["ship"] = CreatePrefab("ship");
 		prefabs["lindahlium"] = CreatePrefab("lindahlium");
+		prefabs["flames"] = CreatePrefab("flames");
 
 		// create gameobjects
 		GameObject* road = new GameObject(prefabs["road"]);
@@ -183,6 +203,11 @@ namespace Game
 
 		player = new Player(prefabs["ship"]);
 		gameObjects.push_back(player);
+
+		GameObject* flames = new GameObject(prefabs["flames"]);
+		flames->transform.scale = glm::vec3(1.55f, 1.f, 1.f);
+		player->exhaust = flames;
+		gameObjects.push_back(flames);
 
 		skybox = new GameObject(prefabs["skybox"]);
 
@@ -231,7 +256,7 @@ namespace Game
 		float w = (float)window.Width();
 		float h = (float)window.Height();
 		textTransform1.position = glm::vec3(-0.7f, 0.8f, 0.f);
-		textTransform1.scale = glm::vec3(w / h, 1.f, 1.f) * (0.4f * 64.f / h);
+		textTransform1.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
 
 		Engine::Transform textTransform2;
 		textTransform2.scale = glm::vec3(w / h, 1.f, 1.f);
@@ -351,6 +376,8 @@ namespace Game
 			cameraTransform.position = glm::mix(cameraTransform.position, cameraPosition, 0.1f);
 			cameraTransform.rotation = glm::mix(cameraTransform.rotation, cameraRotation, 0.1f);
 
+			player->Update();
+
 			if (player->IsColliding(mapData, 5.f))
 			{
 				cameraTransform.position = player->cameraOffset;
@@ -402,6 +429,7 @@ namespace Game
 			auto t1 = std::chrono::steady_clock::now();
 			dt = glm::min(1.f / 30.f, std::chrono::duration<float>(t1 - t0).count());
 			totalTime += dt;
+			WorldSettings::Instance().currentTime = totalTime;
 		}
 	}
 

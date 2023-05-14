@@ -1,12 +1,21 @@
 #include "player.h"
+#include "world_settings.h"
 
 namespace Game
 {
 	Player::Player(Game::Prefab* _prefab) :
-		GameObject(_prefab)
+		GameObject(_prefab),
+		exhaust(nullptr)
 	{}
 
 	Player::~Player() {}
+
+	void Player::Update()
+	{
+		exhaust->transform.position = transform.position - transform.Forward() * 1.2f + transform.Up() * 0.38f;
+		exhaust->transform.rotation = transform.rotation;
+		WorldSettings::Instance().exhaustPosition = exhaust->transform.position;
+	}
 
 	bool Player::IsColliding(const std::vector<glm::vec2>& mapData, float maxOffset)
 	{

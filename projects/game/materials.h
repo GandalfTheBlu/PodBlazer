@@ -37,4 +37,12 @@ namespace Game
 		virtual void Apply(const Engine::MaterialInput& input) override;
 		virtual void CleanUp() override;
 	};
+
+	class ParticleMaterial : public Engine::Material
+	{
+	public:
+		ParticleMaterial();
+
+		virtual void Apply(const Engine::MaterialInput& input) override;
+	};
 }
