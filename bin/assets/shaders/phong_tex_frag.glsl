@@ -35,7 +35,7 @@ void main()
 	
 	vec3 toExhaust = v_position - u_exhaustPos;
 	float bloom = exp(-0.75*dot(toExhaust, toExhaust));
-	col = max(col, vec3(0.9,0.7,0.) * bloom);
+	col += vec3(0.9,0.7,0.) * min(bloom, 1.);
 	
 	Color = vec4(col, 1.);
 }
