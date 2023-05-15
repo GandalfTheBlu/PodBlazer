@@ -12,6 +12,16 @@ namespace Game
 	private:
 		Engine::Window window;
 		bool shouldClose;
+		float deltaTime;
+
+		struct KeyState
+		{
+			bool pressed;
+			bool held;
+			bool released;
+		};
+
+		std::unordered_map<int, KeyState> keys;
 
 		Engine::Renderer renderer;
 		TextRenderer textRenderer;
@@ -25,13 +35,24 @@ namespace Game
 
 		std::vector<glm::vec2> mapData;
 		std::vector<glm::vec2> obstacles;
+		Engine::Transform cameraTransform;
+		Engine::Transform fpsTextTransform;
+		Engine::Transform startTextTransform;
+		Engine::Transform gameOverTextTransform;
 
 		struct GameState
 		{
-			virtual void Start() = 0;
-			virtual void Update() = 0;
-			virtual void Exit() = 0;
+			virtual void Enter(App* app) = 0;
+			virtual void Update(App* app) = 0;
+			virtual void DrawUI(App* app) = 0;
 		};
+
+		struct PlayGame;
+		struct GameOver;
+
+		GameState* currentState;
+
+		void ChangeState(GameState* newState);
 
 	public:
 		App();
@@ -40,5 +61,22 @@ namespace Game
 		bool Open();
 		void UpdateLoop();
 		void Close();
+	};
+
+	struct App::PlayGame : public App::GameState
+	{
+		virtual void Enter(App* app) override;
+		virtual void Update(App* app) override;
+		virtual void DrawUI(App* app) override;
+	};
+
+	struct App::GameOver : public App::GameState
+	{
+		float waitTimer = 0.f;
+		float waitDuration = 4.f;
+
+		virtual void Enter(App* app) override;
+		virtual void Update(App* app) override;
+		virtual void DrawUI(App* app) override;
 	};
 }

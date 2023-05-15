@@ -10,8 +10,10 @@ namespace Game
 {
 	App::App() :
 		shouldClose(false),
+		deltaTime(1.f/60.f),
 		skybox(nullptr),
-		player(nullptr)
+		player(nullptr),
+		currentState(nullptr)
 	{}
 
 	App::~App(){}
@@ -100,6 +102,14 @@ namespace Game
 	{
 		if (!window.Init(1400, 1000, "Pod Blazer"))
 			return false;
+
+		window.KeyCallback = [this](const Engine::KeyEvent& e)
+		{
+			if (e.action == GLFW_PRESS)
+				this->keys[e.key] = { true, true, false };
+			else if (e.action == GLFW_RELEASE)
+				this->keys[e.key] = { false, false, true };
+		};
 
 		if (!renderer.Init(window.Width() / 4, window.Height() / 4))
 			return false;
@@ -219,53 +229,31 @@ namespace Game
 		// setup text renderer
 		textRenderer.Init(RS.GetShader("font"), RS.GetTexture("font"), screenQuad.get(), glm::vec2(51.2f, 64.f));
 
+		float w = (float)window.Width();
+		float h = (float)window.Height();
+		gameOverTextTransform.position = glm::vec3(-0.7f, 0.f, 0.f);
+		gameOverTextTransform.scale = glm::vec3(w/h, 1.f, 1.f) * (64.f / h);
+		fpsTextTransform.position = glm::vec3(-0.7f, 0.8f, 0.f);
+		fpsTextTransform.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
+		startTextTransform.scale = glm::vec3(w / h, 1.f, 1.f);
+		startTextTransform.position = glm::vec3(-5.f, 2.5f, 6.f);
+
 		// setup camera
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
+		cameraTransform.position = player->cameraOffset;
+
+		// set start state
+		ChangeState(new PlayGame());
 
 		return true;
 	}
 
 	void App::UpdateLoop()
 	{
-		struct KeyState
-		{
-			bool pressed;
-			bool held;
-			bool released;
-		};
-
-		std::unordered_map<int, KeyState> keys;
-
-		window.KeyCallback = [&keys](const Engine::KeyEvent& e)
-		{
-			if (e.action == GLFW_PRESS)
-				keys[e.key] = {true, true, false};
-			else if (e.action == GLFW_RELEASE)
-				keys[e.key] = {false, false, true};
-		};
-
-		float dt = 1.f / 60.f;
 		float totalTime = 0.f;
 
-		float rotX = 0.f;
-		float rotY = 0.f;
-		float rotSpeed = 2.f;
-		float moveSpeed = 10.f;
 		float sunAngle = 0.3f;
 		float sunSpeed = 1.f;
-
-		Engine::Transform cameraTransform;
-		cameraTransform.position = player->cameraOffset;
-
-		Engine::Transform textTransform1;
-		float w = (float)window.Width();
-		float h = (float)window.Height();
-		textTransform1.position = glm::vec3(-0.7f, 0.8f, 0.f);
-		textTransform1.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
-
-		Engine::Transform textTransform2;
-		textTransform2.scale = glm::vec3(w / h, 1.f, 1.f);
-		textTransform2.position = glm::vec3(-5.f, 2.5f, 6.f);
 
 		float maxRenderDist = 50.f;
 
@@ -280,87 +268,13 @@ namespace Game
 				break;
 			}
 
-
-			//glm::vec3 move = glm::vec3(0.f);
-
-			int gamePadConnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
-			if (gamePadConnected == 1) {
-				int axesCount;
-				const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
-
-				if (!(axes[1] > -0.05f && axes[1] < 0.05f))
-				{
-					//move -= player->transform.Forward() * axes[1];
-					player->velocityVector -= player->transform.Forward() * player->acceleration * axes[1];
-				}
-				if (!(axes[0] > -0.05f && axes[0] < 0.05f))
-				{
-					//move += player->transform.Right() * axes[0];
-					player->velocityVector += player->transform.Right() * player->acceleration * axes[0];
-				}
-
-
-				if (!(axes[4] > -0.05f && axes[4] < 0.05f))
-				{
-					rotX += dt * rotSpeed * axes[4];
-				}
-				if (!(axes[3] > -0.05f && axes[3] < 0.05f))
-				{
-					rotY += dt * rotSpeed * axes[3];
-				}
-
-			}
-
-
-			if (keys[GLFW_KEY_W].held)
-			{
-				player->velocityVector += player->transform.Forward() * player->acceleration;
-
-			}
-			if (keys[GLFW_KEY_S].held)
-			{
-				player->velocityVector -= player->transform.Forward() * player->acceleration;
-			}
-			if (keys[GLFW_KEY_A].held)
-			{
-				player->velocityVector -= player->transform.Right() * player->acceleration;
-			}
-			if (keys[GLFW_KEY_D].held)
-			{
-				player->velocityVector += player->transform.Right() * player->acceleration;
-			}
-
-			player->velocityVector *= 1-player->friction;
-			if (glm::length(player->velocityVector) > player->maxSpeed)
-			{
-				player->velocityVector = glm::normalize(player->velocityVector) * player->maxSpeed;
-			}
-
-			if (glm::length(player->velocityVector) > 0.f)
-			{
-				player->transform.position += player->velocityVector * dt;
-			}
-			
-			if (keys[GLFW_KEY_LEFT].held)
-			{
-				player->yAngularVelocity -= dt * player->angularAcceleration;
-			}
-			if (keys[GLFW_KEY_RIGHT].held)
-			{
-				player->yAngularVelocity += dt * player->angularAcceleration;
-			}
-			player->yAngularVelocity *= 1 - player->angularFriction;
-			player->yRotation += player->yAngularVelocity * dt;
-
-			player->transform.rotation = glm::quat(glm::vec3(0.f, player->yRotation, 0.f)) * glm::quat(glm::vec3(rotX, 0.f, 0.f));
-
 			if (keys[GLFW_KEY_1].held)
 			{
-				sunAngle += dt * sunSpeed;
+				sunAngle += deltaTime * sunSpeed;
 			}
 			if (keys[GLFW_KEY_2].held)
 			{
-				sunAngle -= dt * sunSpeed;
+				sunAngle -= deltaTime * sunSpeed;
 			}
 
 			WorldSettings::Instance().directionalLight = glm::normalize(
@@ -373,25 +287,15 @@ namespace Game
 				printf("[INFO] reloaded shaders, success: %s\n", (success ? "yes" : "no"));
 			}
 
+			currentState->Update(this);
+
 			glm::vec3 forwardOffset = -cameraTransform.Forward() * -player->cameraOffset.z;
 			forwardOffset.y += player->cameraOffset.y;
 			glm::vec3 cameraPosition = player->transform.position + forwardOffset;
-			glm::quat cameraRotation = player->transform.rotation * glm::quat(glm::vec3(0.f, glm::radians(0.0f), 0.f));
-			
+			glm::quat cameraRotation = player->transform.rotation;
+
 			cameraTransform.position = glm::mix(cameraTransform.position, cameraPosition, 0.1f);
 			cameraTransform.rotation = glm::mix(cameraTransform.rotation, cameraRotation, 0.1f);
-
-			player->Update();
-
-			if (player->IsColliding(mapData, obstacles, 5.f, 1.f))
-			{
-				cameraTransform.position = player->cameraOffset;
-				cameraTransform.rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
-				player->transform.position *= 0.f;
-				player->yRotation = 0.f;
-				player->yAngularVelocity = 0.f;
-				player->velocityVector *= 0.f;
-			}
 
 			// render
 			renderer.SetCamera(camera, cameraTransform);
@@ -413,13 +317,12 @@ namespace Game
 				obj->Draw(renderer);
 			}
 			renderer.ExecuteDrawCalls();
-			
-			// 2D text
-			textRenderer.DrawText("fps:" + std::to_string(int(100.f/dt)/100), textTransform1.CalcMatrix(), glm::vec3(1.f));
 
 			// 3D text
 			glm::mat4 VP = camera.CalcP() * camera.CalcV(cameraTransform);
-			textRenderer.DrawText("Start!", VP * textTransform2.CalcMatrix(), glm::vec3(1.f, 0.8f, 0.f), true);
+			textRenderer.DrawText("Start!", VP * startTextTransform.CalcMatrix(), glm::vec3(1.f, 0.8f, 0.f), true);
+
+			currentState->DrawUI(this);
 
 			renderer.RenderToScreen(window.Width(), window.Height());
 
@@ -432,8 +335,8 @@ namespace Game
 			}
 
 			auto t1 = std::chrono::steady_clock::now();
-			dt = glm::min(1.f / 30.f, std::chrono::duration<float>(t1 - t0).count());
-			totalTime += dt;
+			deltaTime = glm::min(1.f / 30.f, std::chrono::duration<float>(t1 - t0).count());
+			totalTime += deltaTime;
 			WorldSettings::Instance().currentTime = totalTime;
 		}
 	}
@@ -448,10 +351,109 @@ namespace Game
 
 		delete skybox;
 
+		delete currentState;
+
 		Engine::Resources::Instance().CleanUp();
 
 		renderer.Deinit();
 
 		window.Deinit();
+	}
+
+	void App::ChangeState(GameState* newState)
+	{
+		if (currentState != nullptr)
+		{
+			delete currentState;
+		}
+
+		currentState = newState;
+		currentState->Enter(this);
+	}
+
+	void App::PlayGame::Enter(App* app)
+	{
+		app->cameraTransform.position = app->player->cameraOffset;
+		app->cameraTransform.rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
+		app->player->transform.position *= 0.f;
+		app->player->yRotation = 0.f;
+		app->player->yAngularVelocity = 0.f;
+		app->player->velocityVector *= 0.f;
+	}
+
+	void App::PlayGame::Update(App* app)
+	{
+		Player* player = app->player;
+
+		int gamePadConnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
+		if (gamePadConnected == 1) {
+			int axesCount;
+			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+
+			if (!(axes[1] > -0.05f && axes[1] < 0.05f))
+				player->velocityVector -= player->transform.Forward() * player->acceleration * axes[1];
+			if (!(axes[0] > -0.05f && axes[0] < 0.05f))
+				player->velocityVector += player->transform.Right() * player->acceleration * axes[0];
+		}
+
+		if (app->keys[GLFW_KEY_W].held)
+			player->velocityVector += player->transform.Forward() * player->acceleration;
+		if (app->keys[GLFW_KEY_S].held)
+			player->velocityVector -= player->transform.Forward() * player->acceleration;
+		if (app->keys[GLFW_KEY_A].held)
+			player->velocityVector -= player->transform.Right() * player->acceleration;
+		if (app->keys[GLFW_KEY_D].held)
+			player->velocityVector += player->transform.Right() * player->acceleration;
+
+		player->velocityVector *= 1 - player->friction;
+		if (glm::length(player->velocityVector) > player->maxSpeed)
+			player->velocityVector = glm::normalize(player->velocityVector) * player->maxSpeed;
+
+		if (glm::length(player->velocityVector) > 0.f)
+			player->transform.position += player->velocityVector * app->deltaTime;
+
+		if (app->keys[GLFW_KEY_LEFT].held)
+			player->yAngularVelocity -= app->deltaTime * player->angularAcceleration;
+		if (app->keys[GLFW_KEY_RIGHT].held)
+			player->yAngularVelocity += app->deltaTime * player->angularAcceleration;
+
+		player->yAngularVelocity *= 1 - player->angularFriction;
+		player->yRotation += player->yAngularVelocity * app->deltaTime;
+
+		player->transform.rotation = glm::quat(glm::vec3(0.f, player->yRotation, 0.f));
+
+		player->Update();
+
+		if (player->IsColliding(app->mapData, app->obstacles, 5.f, 1.f))
+		{
+			app->ChangeState(new GameOver());
+			return;
+		}
+	}
+
+	void App::PlayGame::DrawUI(App* app)
+	{
+		app->textRenderer.DrawText("fps:" + std::to_string(int(100.f / app->deltaTime) / 100), app->fpsTextTransform.CalcMatrix(), glm::vec3(1.f));
+	}
+
+	void App::GameOver::Enter(App* app)
+	{
+		app->player->yAngularVelocity = 0.f;
+		app->player->velocityVector *= 0.f;
+	}
+
+	void App::GameOver::Update(App* app)
+	{
+		waitTimer += app->deltaTime;
+		if (waitTimer >= waitDuration)
+		{
+			app->ChangeState(new PlayGame());
+			return;
+		}
+	}
+
+	void App::GameOver::DrawUI(App* app)
+	{
+		app->textRenderer.DrawText("Game Over!", app->gameOverTextTransform.CalcMatrix(), glm::vec3(1.f, 0.f, 0.f));
 	}
 }
