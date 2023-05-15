@@ -259,7 +259,7 @@ namespace Game
 		float totalTime = 0.f;
 
 		float sunAngle = 0.3f;
-		float sunSpeed = 1.f;
+		float sunSpeed = 0.1f;
 
 		float maxRenderDist = 50.f;
 
@@ -274,14 +274,15 @@ namespace Game
 				break;
 			}
 
-			if (keys[GLFW_KEY_1].held)
+			/*if (keys[GLFW_KEY_1].held)
 			{
 				sunAngle += deltaTime * sunSpeed;
 			}
 			if (keys[GLFW_KEY_2].held)
 			{
 				sunAngle -= deltaTime * sunSpeed;
-			}
+			}*/
+			sunAngle += deltaTime * sunSpeed;
 
 			WorldSettings::Instance().directionalLight = glm::normalize(
 				glm::quat(glm::vec3(sunAngle, 0.f, 0.f)) * glm::quat(glm::vec3(0.f, 0.2f, 0.f)) *
