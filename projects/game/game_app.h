@@ -33,6 +33,7 @@ namespace Game
 
 		GameObject* skybox;
 		Player* player;
+		GameObject* hunter;
 		PointSystem pointSystem;
 
 		std::vector<glm::vec2> mapData;
@@ -68,6 +69,9 @@ namespace Game
 
 	struct App::PlayGame : public App::GameState
 	{
+		float hunterFollowTimer = 0.f;
+		float hunterFollowDuration = 3.f;
+
 		virtual void Enter(App* app) override;
 		virtual void Update(App* app) override;
 		virtual void DrawUI(App* app) override;

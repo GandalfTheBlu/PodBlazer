@@ -13,6 +13,7 @@ namespace Game
 		deltaTime(1.f/60.f),
 		skybox(nullptr),
 		player(nullptr),
+		hunter(nullptr),
 		currentState(nullptr)
 	{}
 
@@ -77,7 +78,7 @@ namespace Game
 		{
 			std::shared_ptr<TextureMaterial> material = std::make_shared<TextureMaterial>();
 			material->shader = Engine::Resources::Instance().GetShader(shaderName);
-			material->texture = Engine::Resources::Instance().GetTexture(textureName);
+			material->texture = Engine::Resources::Instance().GetTexture(textureName + std::to_string(i));
 			Engine::Resources::Instance().StoreMaterial(name + std::to_string(i), material);
 			i++;
 		}
@@ -135,7 +136,12 @@ namespace Game
 
 		std::shared_ptr<Engine::Texture> lindahliumTexture = std::make_shared<Engine::Texture>();
 		lindahliumTexture->Init("assets/textures/lindahlium.jpg");
-		RS.StoreTexture("lindahlium", lindahliumTexture);
+		RS.StoreTexture("lindahlium0", lindahliumTexture);
+		RS.StoreTexture("hunter1", lindahliumTexture);
+
+		std::shared_ptr<Engine::Texture> paletteTexture = std::make_shared<Engine::Texture>();
+		paletteTexture->Init("assets/textures/palette.png");
+		RS.StoreTexture("hunter0", paletteTexture);
 
 		std::string objPath = "assets/kenney_space-kit/Models/OBJ format/";
 
@@ -147,7 +153,8 @@ namespace Game
 			!LoadObjMeshAndMaterials(objPath + "terrain.obj", "ground", "phong") ||
 			!LoadObjMeshAndMaterials(objPath + "craft_speederC.obj", "ship", "phong") ||
 			!LoadObjMeshAndMaterialsTextured("assets/custom_meshes/lindahlium.obj", "lindahlium", "phong_tex", "lindahlium") ||
-			!LoadObjMeshNoMaterial("assets/custom_meshes/unit_cube.obj", "flames"))
+			!LoadObjMeshNoMaterial("assets/custom_meshes/unit_cube.obj", "flames") ||
+			!LoadObjMeshAndMaterialsTextured("assets/custom_meshes/hunter.obj", "hunter", "phong_tex", "hunter"))
 			return false;
 
 		// store custom materials
@@ -189,6 +196,7 @@ namespace Game
 		prefabs["ship"] = CreatePrefab("ship");
 		prefabs["lindahlium"] = CreatePrefab("lindahlium");
 		prefabs["flames"] = CreatePrefab("flames");
+		prefabs["hunter"] = CreatePrefab("hunter");
 
 		// create gameobjects
 		GameObject* road = new GameObject(prefabs["road"]);
@@ -224,6 +232,10 @@ namespace Game
 		flames->transform.scale = glm::vec3(1.55f, 1.f, 1.f);
 		player->exhaust = flames;
 		gameObjects.push_back(flames);
+
+		hunter = new GameObject(prefabs["hunter"]);
+		hunter->transform.position = glm::vec3(0.f, 1.f, -5.f);
+		gameObjects.push_back(hunter);
 
 		skybox = new GameObject(prefabs["skybox"]);
 
@@ -413,6 +425,32 @@ namespace Game
 		player->Update(app->deltaTime);
 
 		app->pointSystem.PassCheckpoint(app->mapData, player->transform.position);
+
+		hunterFollowTimer = glm::max(hunterFollowTimer - app->deltaTime, 0.f);
+		GameObject* hunter = app->hunter;
+		if (hunterFollowTimer > 0.f)
+		{
+			// persuit player
+			hunter->transform.position = glm::mix(hunter->transform.position, player->transform.position, 4.f * app->deltaTime);
+			hunter->transform.rotation = glm::quatLookAt(glm::normalize(player->transform.position - hunter->transform.position), glm::vec3(0.f,1.f,0.f));
+		}
+		else
+		{
+			// sink into the ground to hide
+			hunter->transform.position.y = glm::mix(hunter->transform.position.y, -2.f, 0.5f * app->deltaTime);
+		}
+
+		// check if player is approaching the road edge
+		if (player->IsColliding(app->mapData, {}, 4.f, 0.f))
+		{
+			if (glm::distance(hunter->transform.position, player->transform.position) > 10.f)
+			{
+				float side = glm::sign(hunter->transform.Forward().x);// some semi-random sign
+				hunter->transform.position = player->transform.position + 
+					player->transform.Forward() * 10.f + player->transform.Right() * (10.f * side);
+			}
+			hunterFollowTimer = hunterFollowDuration;
+		}
 
 		if (player->IsColliding(app->mapData, app->obstacles, 5.f, 1.7f))
 		{
