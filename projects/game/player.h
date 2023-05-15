@@ -16,6 +16,7 @@ namespace Game
 		glm::vec3 velocityVector = glm::vec3(0, 0, 0);
 		float friction = 0.01f;
 		float acceleration = 0.15f;
+		float startAcceleration = 0.15f;
 		float maxSpeed = 10.f;
 
 		float yRotation = 0;

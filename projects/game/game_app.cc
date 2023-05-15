@@ -207,6 +207,7 @@ namespace Game
 		{
 			GameObject* obstacle = new GameObject(prefabs["lindahlium"]);
 			obstacle->transform.position = glm::vec3(obstacles[i].x, 0.f, obstacles[i].y);
+			obstacle->transform.scale *= 0.6f;
 			gameObjects.push_back(obstacle);
 		}
 
@@ -247,6 +248,9 @@ namespace Game
 		// set start state
 		ChangeState(new PlayGame());
 
+		pointSystem.SetStartPoint(mapData, player->transform.position);
+		pointSystem.LoadHighScore();
+
 		return true;
 	}
 
@@ -258,8 +262,6 @@ namespace Game
 		float sunSpeed = 1.f;
 
 		float maxRenderDist = 50.f;
-
-		pointSystem.SetStartPoint(mapData, player->transform.position);
 
 		while (!shouldClose)
 		{
@@ -359,6 +361,8 @@ namespace Game
 
 		Engine::Resources::Instance().CleanUp();
 
+		pointSystem.SaveHighScore();
+
 		renderer.Deinit();
 
 		window.Deinit();
@@ -389,21 +393,35 @@ namespace Game
 	{
 		Player* player = app->player;
 
+		player->acceleration = player->startAcceleration * (1.f + (float)app->pointSystem.lapsCompleted * 0.2f);
+
 		int gamePadConnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
 		if (gamePadConnected == 1) {
 			int axesCount;
 			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 
-			if (!(axes[1] > -0.05f && axes[1] < 0.05f))
-				player->velocityVector -= player->transform.Forward() * player->acceleration * axes[1];
+			//if (!(axes[1] > -0.05f && axes[1] < 0.05f))
+			//	player->velocityVector -= player->transform.Forward() * player->acceleration * axes[1];
+			
 			if (!(axes[0] > -0.05f && axes[0] < 0.05f))
 				player->velocityVector += player->transform.Right() * player->acceleration * axes[0];
+
+			if (!(axes[4] > -0.05f && axes[4] < 0.05f))
+			{
+				player->yAngularVelocity -= app->deltaTime * player->angularAcceleration * axes[4];
+			}
+			if (!(axes[3] > -0.05f && axes[3] < 0.05f))
+			{
+				player->yAngularVelocity -= app->deltaTime * player->angularAcceleration * axes[3];
+			}
 		}
 
-		if (app->keys[GLFW_KEY_W].held)
-			player->velocityVector += player->transform.Forward() * player->acceleration;
-		if (app->keys[GLFW_KEY_S].held)
-			player->velocityVector -= player->transform.Forward() * player->acceleration;
+		player->velocityVector += player->transform.Forward() * player->acceleration;
+
+		//if (app->keys[GLFW_KEY_W].held)
+		//	player->velocityVector += player->transform.Forward() * player->acceleration;
+		/*if (app->keys[GLFW_KEY_S].held)
+			player->velocityVector -= player->transform.Forward() * player->acceleration;*/
 		if (app->keys[GLFW_KEY_A].held)
 			player->velocityVector -= player->transform.Right() * player->acceleration;
 		if (app->keys[GLFW_KEY_D].held)
@@ -430,7 +448,7 @@ namespace Game
 
 		app->pointSystem.PassCheckpoint(app->mapData, player->transform.position);
 
-		if (player->IsColliding(app->mapData, app->obstacles, 5.f, 1.f))
+		if (player->IsColliding(app->mapData, app->obstacles, 5.f, 1.7f))
 		{
 			app->ChangeState(new GameOver());
 			return;
@@ -447,6 +465,8 @@ namespace Game
 	{
 		app->player->yAngularVelocity = 0.f;
 		app->player->velocityVector *= 0.f;
+		app->pointSystem.ResetScore();
+		app->pointSystem.SaveHighScore();
 	}
 
 	void App::GameOver::Update(App* app)

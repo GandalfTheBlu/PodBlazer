@@ -163,7 +163,7 @@ namespace Game
 		for (size_t i = 0; i < mapData.size(); i += pointsBetweenObstacles)
 		{
 			float angle = (float)i * 0.2f;
-			glm::vec2 offset = glm::vec2(glm::cos(angle), glm::sin(angle)) * 1.2f;
+			glm::vec2 offset = glm::vec2(glm::cos(angle), glm::sin(angle)) * 3.f;
 			glm::vec2 obstacle = mapData[i] + offset;
 			outObstacles.push_back(obstacle);
 		}

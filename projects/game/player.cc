@@ -15,6 +15,7 @@ namespace Game
 		exhaust->transform.position = transform.position - transform.Forward() * 1.2f + transform.Up() * 0.38f;
 		exhaust->transform.rotation = transform.rotation;
 		WorldSettings::Instance().exhaustPosition = exhaust->transform.position;
+
 	}
 
 	bool Player::IsColliding(const std::vector<glm::vec2>& mapData, const std::vector<glm::vec2>& obstacles, float maxRoadCenterOffset, float obstacleRadius)
