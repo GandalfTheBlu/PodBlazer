@@ -464,6 +464,7 @@ namespace Game
 	{
 		app->player->yAngularVelocity = 0.f;
 		app->player->velocityVector *= 0.f;
+		app->player->acceleration = app->player->startAcceleration;
 		app->pointSystem.ResetScore();
 		app->pointSystem.SaveHighScore();
 	}
