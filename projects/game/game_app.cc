@@ -233,10 +233,12 @@ namespace Game
 		float h = (float)window.Height();
 		gameOverTextTransform.position = glm::vec3(-0.7f, 0.f, 0.f);
 		gameOverTextTransform.scale = glm::vec3(w/h, 1.f, 1.f) * (64.f / h);
-		fpsTextTransform.position = glm::vec3(-0.7f, 0.8f, 0.f);
+		fpsTextTransform.position = glm::vec3(-0.9f, 0.9f, 0.f);
 		fpsTextTransform.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
 		startTextTransform.scale = glm::vec3(w / h, 1.f, 1.f);
 		startTextTransform.position = glm::vec3(-5.f, 2.5f, 6.f);
+		pointsTransform.position = glm::vec3(-0.9f, 0.75f, 0.f);
+		pointsTransform.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
 
 		// setup camera
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
@@ -256,6 +258,8 @@ namespace Game
 		float sunSpeed = 1.f;
 
 		float maxRenderDist = 50.f;
+
+		pointSystem.SetStartPoint(mapData, player->transform.position);
 
 		while (!shouldClose)
 		{
@@ -424,6 +428,8 @@ namespace Game
 
 		player->Update();
 
+		app->pointSystem.PassCheckpoint(app->mapData, player->transform.position);
+
 		if (player->IsColliding(app->mapData, app->obstacles, 5.f, 1.f))
 		{
 			app->ChangeState(new GameOver());
@@ -434,6 +440,7 @@ namespace Game
 	void App::PlayGame::DrawUI(App* app)
 	{
 		app->textRenderer.DrawText("fps:" + std::to_string(int(100.f / app->deltaTime) / 100), app->fpsTextTransform.CalcMatrix(), glm::vec3(1.f));
+		app->textRenderer.DrawText("POINTS:" + std::to_string(app->pointSystem.currentPoints) + "\n" + "HIGHSCORE:" + std::to_string(app->pointSystem.highScore), app->pointsTransform.CalcMatrix(), glm::vec3(1.f));
 	}
 
 	void App::GameOver::Enter(App* app)

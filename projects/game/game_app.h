@@ -4,6 +4,7 @@
 #include "game_object.h"
 #include "text_renderer.h"
 #include "player.h"
+#include "point_system.h"
 
 namespace Game
 {
@@ -32,6 +33,7 @@ namespace Game
 
 		GameObject* skybox;
 		Player* player;
+		PointSystem pointSystem;
 
 		std::vector<glm::vec2> mapData;
 		std::vector<glm::vec2> obstacles;
@@ -39,6 +41,7 @@ namespace Game
 		Engine::Transform fpsTextTransform;
 		Engine::Transform startTextTransform;
 		Engine::Transform gameOverTextTransform;
+		Engine::Transform pointsTransform;
 
 		struct GameState
 		{
