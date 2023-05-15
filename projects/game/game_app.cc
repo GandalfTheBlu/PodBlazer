@@ -393,7 +393,7 @@ namespace Game
 	{
 		Player* player = app->player;
 
-		player->acceleration = player->startAcceleration * (1.f + (float)app->pointSystem.lapsCompleted * 0.2f);
+		player->acceleration = player->startAcceleration * (1.f + (float)app->pointSystem.lapsCompleted * 0.15f);
 
 		int gamePadConnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
 		if (gamePadConnected == 1) {
@@ -408,11 +408,11 @@ namespace Game
 
 			if (!(axes[4] > -0.05f && axes[4] < 0.05f))
 			{
-				player->yAngularVelocity -= app->deltaTime * player->angularAcceleration * axes[4];
+				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[4];
 			}
 			if (!(axes[3] > -0.05f && axes[3] < 0.05f))
 			{
-				player->yAngularVelocity -= app->deltaTime * player->angularAcceleration * axes[3];
+				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[3];
 			}
 		}
 
@@ -428,8 +428,6 @@ namespace Game
 			player->velocityVector += player->transform.Right() * player->acceleration;
 
 		player->velocityVector *= 1 - player->friction;
-		if (glm::length(player->velocityVector) > player->maxSpeed)
-			player->velocityVector = glm::normalize(player->velocityVector) * player->maxSpeed;
 
 		if (glm::length(player->velocityVector) > 0.f)
 			player->transform.position += player->velocityVector * app->deltaTime;
