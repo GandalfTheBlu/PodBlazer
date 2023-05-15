@@ -14,18 +14,18 @@ namespace Game
 		glm::vec3 cameraOffset = glm::vec3(0, 2, -5);
 
 		glm::vec3 velocityVector = glm::vec3(0, 0, 0);
-		float friction = 0.01f;
-		float acceleration = 0.15f;
-		float startAcceleration = 0.12f;
+		float friction = 1.f;
+		float acceleration = 10.f;
+		float startAcceleration = 10.f;
 
 		float yRotation = 0;
 		float angularAcceleration = 5.f;
-		float angularFriction = 0.06f;
+		float angularFriction = 3.f;
 		float yAngularVelocity = 0;
 
 		GameObject* exhaust;
 
-		void Update();
+		void Update(float deltaTime);
 		bool IsColliding(const std::vector<glm::vec2>& mapData, const std::vector<glm::vec2>& obstacles, float maxRoadCenterOffset, float obstacleRadius);
 	};
 }

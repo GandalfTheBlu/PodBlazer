@@ -41,7 +41,7 @@ namespace Game
 		Engine::Transform fpsTextTransform;
 		Engine::Transform startTextTransform;
 		Engine::Transform gameOverTextTransform;
-		Engine::Transform pointsTransform;
+		Engine::Transform pointsTextTransform;
 
 		struct GameState
 		{

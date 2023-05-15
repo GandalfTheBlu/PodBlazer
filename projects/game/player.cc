@@ -10,8 +10,15 @@ namespace Game
 
 	Player::~Player() {}
 
-	void Player::Update()
+	void Player::Update(float deltaTime)
 	{
+		velocityVector += transform.Forward() * acceleration * deltaTime;
+		velocityVector *= 1.f - friction * deltaTime;
+		transform.position += velocityVector * deltaTime;
+		yAngularVelocity *= 1.f - angularFriction * deltaTime;
+		yRotation += yAngularVelocity * deltaTime;
+		transform.rotation = glm::quat(glm::vec3(0.f, yRotation, 0.f));
+
 		exhaust->transform.position = transform.position - transform.Forward() * 1.2f + transform.Up() * 0.38f;
 		exhaust->transform.rotation = transform.rotation;
 		WorldSettings::Instance().exhaustPosition = exhaust->transform.position;

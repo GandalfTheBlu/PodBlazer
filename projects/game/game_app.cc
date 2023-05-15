@@ -126,7 +126,7 @@ namespace Game
 
 		// load all textures
 		std::shared_ptr<Engine::Texture> roadTexture = std::make_shared<Engine::Texture>();
-		roadTexture->Init("assets/textures/test.png");
+		roadTexture->Init("assets/textures/road.png");
 		RS.StoreTexture("road", roadTexture);
 
 		std::shared_ptr<Engine::Texture> fontTexture = std::make_shared<Engine::Texture>();
@@ -238,8 +238,8 @@ namespace Game
 		fpsTextTransform.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
 		startTextTransform.scale = glm::vec3(w / h, 1.f, 1.f);
 		startTextTransform.position = glm::vec3(-5.f, 2.5f, 6.f);
-		pointsTransform.position = glm::vec3(-0.9f, 0.75f, 0.f);
-		pointsTransform.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
+		pointsTextTransform.position = glm::vec3(-0.9f, 0.75f, 0.f);
+		pointsTextTransform.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
 
 		// setup camera
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
@@ -265,7 +265,7 @@ namespace Game
 
 		while (!shouldClose)
 		{
-			auto t0 = std::chrono::steady_clock::now();
+			auto t0 = std::chrono::high_resolution_clock::now();
 
 			window.BeginUpdate();
 			if (window.ShouldClose())
@@ -274,14 +274,6 @@ namespace Game
 				break;
 			}
 
-			/*if (keys[GLFW_KEY_1].held)
-			{
-				sunAngle += deltaTime * sunSpeed;
-			}
-			if (keys[GLFW_KEY_2].held)
-			{
-				sunAngle -= deltaTime * sunSpeed;
-			}*/
 			sunAngle += deltaTime * sunSpeed;
 
 			WorldSettings::Instance().directionalLight = glm::normalize(
@@ -301,8 +293,8 @@ namespace Game
 			glm::vec3 cameraPosition = player->transform.position + forwardOffset;
 			glm::quat cameraRotation = player->transform.rotation;
 
-			cameraTransform.position = glm::mix(cameraTransform.position, cameraPosition, 0.1f);
-			cameraTransform.rotation = glm::mix(cameraTransform.rotation, cameraRotation, 0.1f);
+			cameraTransform.position = glm::mix(cameraTransform.position, cameraPosition, 10.f * deltaTime);
+			cameraTransform.rotation = glm::mix(cameraTransform.rotation, cameraRotation, 10.f * deltaTime);
 
 			// render
 			renderer.SetCamera(camera, cameraTransform);
@@ -341,7 +333,7 @@ namespace Game
 				k.second.released = false;
 			}
 
-			auto t1 = std::chrono::steady_clock::now();
+			auto t1 = std::chrono::high_resolution_clock::now();
 			deltaTime = glm::min(1.f / 30.f, std::chrono::duration<float>(t1 - t0).count());
 			totalTime += deltaTime;
 			WorldSettings::Instance().currentTime = totalTime;
@@ -401,49 +393,24 @@ namespace Game
 			int axesCount;
 			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 
-			//if (!(axes[1] > -0.05f && axes[1] < 0.05f))
-			//	player->velocityVector -= player->transform.Forward() * player->acceleration * axes[1];
-			
 			if (!(axes[0] > -0.05f && axes[0] < 0.05f))
-				player->velocityVector += player->transform.Right() * player->acceleration * axes[0];
-
+				player->velocityVector += player->transform.Right() * player->acceleration * axes[0] * app->deltaTime;
 			if (!(axes[4] > -0.05f && axes[4] < 0.05f))
-			{
-				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[4];
-			}
+				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[4] * app->deltaTime;
 			if (!(axes[3] > -0.05f && axes[3] < 0.05f))
-			{
-				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[3];
-			}
+				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[3] * app->deltaTime;
 		}
 
-		player->velocityVector += player->transform.Forward() * player->acceleration;
-
-		//if (app->keys[GLFW_KEY_W].held)
-		//	player->velocityVector += player->transform.Forward() * player->acceleration;
-		/*if (app->keys[GLFW_KEY_S].held)
-			player->velocityVector -= player->transform.Forward() * player->acceleration;*/
 		if (app->keys[GLFW_KEY_A].held)
-			player->velocityVector -= player->transform.Right() * player->acceleration;
+			player->velocityVector -= player->transform.Right() * player->acceleration * app->deltaTime;
 		if (app->keys[GLFW_KEY_D].held)
-			player->velocityVector += player->transform.Right() * player->acceleration;
-
-		player->velocityVector *= 1 - player->friction;
-
-		if (glm::length(player->velocityVector) > 0.f)
-			player->transform.position += player->velocityVector * app->deltaTime;
-
+			player->velocityVector += player->transform.Right() * player->acceleration * app->deltaTime;
 		if (app->keys[GLFW_KEY_LEFT].held)
 			player->yAngularVelocity -= app->deltaTime * player->angularAcceleration;
 		if (app->keys[GLFW_KEY_RIGHT].held)
 			player->yAngularVelocity += app->deltaTime * player->angularAcceleration;
 
-		player->yAngularVelocity *= 1 - player->angularFriction;
-		player->yRotation += player->yAngularVelocity * app->deltaTime;
-
-		player->transform.rotation = glm::quat(glm::vec3(0.f, player->yRotation, 0.f));
-
-		player->Update();
+		player->Update(app->deltaTime);
 
 		app->pointSystem.PassCheckpoint(app->mapData, player->transform.position);
 
@@ -457,7 +424,7 @@ namespace Game
 	void App::PlayGame::DrawUI(App* app)
 	{
 		app->textRenderer.DrawText("fps:" + std::to_string(int(100.f / app->deltaTime) / 100), app->fpsTextTransform.CalcMatrix(), glm::vec3(1.f));
-		app->textRenderer.DrawText("POINTS:" + std::to_string(app->pointSystem.currentPoints) + "\n" + "HIGHSCORE:" + std::to_string(app->pointSystem.highScore), app->pointsTransform.CalcMatrix(), glm::vec3(1.f));
+		app->textRenderer.DrawText("POINTS:" + std::to_string(app->pointSystem.currentPoints) + "\nHIGHSCORE:" + std::to_string(app->pointSystem.highScore), app->pointsTextTransform.CalcMatrix(), glm::vec3(1.f));
 	}
 
 	void App::GameOver::Enter(App* app)
