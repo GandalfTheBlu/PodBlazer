@@ -159,6 +159,8 @@ namespace Game
 		if (!LoadMapFile("assets/map_data/map.txt", mapData))
 			return false;
 
+		GenerateObstaclePoints(mapData, obstacles);
+
 		// store custom meshes
 		RS.StoreMesh("road", GenerateRoadMesh(mapData));
 
@@ -191,9 +193,12 @@ namespace Game
 			}, gameObjects
 		);
 
-		GameObject* lindahlium = new GameObject(prefabs["lindahlium"]);
-		lindahlium->transform.position = glm::vec3(0.f, 0.f, 6.f);
-		gameObjects.push_back(lindahlium);
+		for (size_t i = 0; i < obstacles.size(); i++)
+		{
+			GameObject* obstacle = new GameObject(prefabs["lindahlium"]);
+			obstacle->transform.position = glm::vec3(obstacles[i].x, 0.f, obstacles[i].y);
+			gameObjects.push_back(obstacle);
+		}
 
 		GameObject* ground = new GameObject(prefabs["ground"]);
 		ground->transform.scale *= 500.f;
@@ -378,7 +383,7 @@ namespace Game
 
 			player->Update();
 
-			if (player->IsColliding(mapData, 5.f))
+			if (player->IsColliding(mapData, obstacles, 5.f, 1.f))
 			{
 				cameraTransform.position = player->cameraOffset;
 				cameraTransform.rotation = glm::quat(1.f, 0.f, 0.f, 0.f);

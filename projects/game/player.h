@@ -26,6 +26,6 @@ namespace Game
 		GameObject* exhaust;
 
 		void Update();
-		bool IsColliding(const std::vector<glm::vec2>& mapData, float maxOffset);
+		bool IsColliding(const std::vector<glm::vec2>& mapData, const std::vector<glm::vec2>& obstacles, float maxRoadCenterOffset, float obstacleRadius);
 	};
 }

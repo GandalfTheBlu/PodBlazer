@@ -156,4 +156,16 @@ namespace Game
 			}
 		}
 	}
+
+	void GenerateObstaclePoints(const std::vector<glm::vec2>& mapData, std::vector<glm::vec2>& outObstacles)
+	{
+		size_t pointsBetweenObstacles = 3;
+		for (size_t i = 0; i < mapData.size(); i += pointsBetweenObstacles)
+		{
+			float angle = (float)i * 0.2f;
+			glm::vec2 offset = glm::vec2(glm::cos(angle), glm::sin(angle)) * 1.2f;
+			glm::vec2 obstacle = mapData[i] + offset;
+			outObstacles.push_back(obstacle);
+		}
+	}
 }

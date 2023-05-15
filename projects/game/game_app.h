@@ -24,6 +24,14 @@ namespace Game
 		Player* player;
 
 		std::vector<glm::vec2> mapData;
+		std::vector<glm::vec2> obstacles;
+
+		struct GameState
+		{
+			virtual void Start() = 0;
+			virtual void Update() = 0;
+			virtual void Exit() = 0;
+		};
 
 	public:
 		App();
