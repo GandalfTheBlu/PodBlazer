@@ -437,7 +437,7 @@ namespace Game
 		else
 		{
 			// sink into the ground to hide
-			hunter->transform.position.y = glm::mix(hunter->transform.position.y, -2.f, 0.5f * app->deltaTime);
+			hunter->transform.position.y = glm::mix(hunter->transform.position.y, -10.f, 0.5f * app->deltaTime);
 		}
 
 		// check if player is approaching the road edge
