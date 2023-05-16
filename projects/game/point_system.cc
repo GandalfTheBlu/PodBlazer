@@ -61,4 +61,5 @@ void PointSystem::SaveHighScore() {
 void PointSystem::ResetScore() {
     currentPoints = 0;
     currentCheckPoint = startCheckpoint;
+    lapsCompleted = 0;
 }
