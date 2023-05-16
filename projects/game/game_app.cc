@@ -480,12 +480,14 @@ namespace Game
 			int axesCount;
 			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
 
+			float gamePadTurnScale = 70.f;
+
 			if (!(axes[0] > -0.05f && axes[0] < 0.05f))
 				player->velocityVector += player->transform.Right() * player->acceleration * axes[0] * app->deltaTime;
 			if (!(axes[4] > -0.05f && axes[4] < 0.05f))
-				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[4] * app->deltaTime;
+				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[4] * app->deltaTime * gamePadTurnScale;
 			if (!(axes[3] > -0.05f && axes[3] < 0.05f))
-				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[3] * app->deltaTime;
+				player->yAngularVelocity += app->deltaTime * player->angularAcceleration * axes[3] * app->deltaTime * gamePadTurnScale;
 		}
 
 		if (app->keys[GLFW_KEY_A].held)
@@ -517,7 +519,7 @@ namespace Game
 		}
 
 		// check if player is approaching the road edge
-		if (player->IsColliding(app->mapData, {}, 3.5f, 0.f))
+		if (hunterFollowTimer == 0.f && player->IsColliding(app->mapData, {}, 3.5f, 0.f))
 		{
 			if (glm::distance(hunter->transform.position, player->transform.position) > 10.f)
 			{
