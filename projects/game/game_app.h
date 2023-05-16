@@ -39,10 +39,8 @@ namespace Game
 		std::vector<glm::vec2> mapData;
 		std::vector<glm::vec2> obstacles;
 		Engine::Transform cameraTransform;
-		Engine::Transform fpsTextTransform;
+		
 		Engine::Transform startTextTransform;
-		Engine::Transform gameOverTextTransform;
-		Engine::Transform pointsTextTransform;
 
 		struct GameState
 		{
@@ -51,6 +49,7 @@ namespace Game
 			virtual void DrawUI(App* app) = 0;
 		};
 
+		struct StartGame;
 		struct PlayGame;
 		struct GameOver;
 
@@ -67,10 +66,26 @@ namespace Game
 		void Close();
 	};
 
+	struct App::StartGame : public App::GameState
+	{
+		float startScreenTimer = 0.f;
+		float startScreenDuration = 20.f;
+		float textTimer = 0.f;
+		int textIndex = 0;
+		float textDurations[3] = {10.f, 5.f, 5.f};
+		Engine::Transform textTransform;
+
+		virtual void Enter(App* app) override;
+		virtual void Update(App* app) override;
+		virtual void DrawUI(App* app) override;
+	};
+
 	struct App::PlayGame : public App::GameState
 	{
 		float hunterFollowTimer = 0.f;
 		float hunterFollowDuration = 3.f;
+		float hunterSpawnSide = 1.f;
+		Engine::Transform textTransform;
 
 		virtual void Enter(App* app) override;
 		virtual void Update(App* app) override;
@@ -81,6 +96,7 @@ namespace Game
 	{
 		float waitTimer = 0.f;
 		float waitDuration = 4.f;
+		Engine::Transform gameOverTextTransform;
 
 		virtual void Enter(App* app) override;
 		virtual void Update(App* app) override;

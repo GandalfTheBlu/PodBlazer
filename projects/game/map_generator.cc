@@ -126,12 +126,10 @@ namespace Game
 		return mesh;
 	}
 
-	void SpawnSideObjects(const std::vector<glm::vec2>& mapData, const std::vector<Prefab*>& prefabs, std::vector<GameObject*>& outGameObjects)
+	void SpawnSideObjects(const std::vector<glm::vec2>& mapData, const std::vector<Prefab*>& prefabs, std::vector<GameObject*>& outGameObjects, float roadCenterOffset)
 	{
 		int objectsPerSegment = 3;
 		size_t prefabIndex = 0;
-
-		float roadOffset = 6.f;
 
 		for (int i = 0; i < (int)mapData.size(); i++)
 		{
@@ -148,7 +146,7 @@ namespace Game
 			{
 				GameObject* obj = new GameObject(prefabs[prefabIndex]);
 				float side = j % 2 == 0 ? -1.f : 1.f;
-				obj->transform.position = q0 + (q1 - q0) * ((float)j / objectsPerSegment) + leftDir * (side * roadOffset);
+				obj->transform.position = q0 + (q1 - q0) * ((float)j / objectsPerSegment) + leftDir * (side * roadCenterOffset);
 				obj->transform.scale *= 3.5f;
 				outGameObjects.push_back(obj);
 

@@ -203,12 +203,16 @@ namespace Game
 		road->cullable = false;
 		gameObjects.push_back(road);
 
-		SpawnSideObjects(mapData, {
-			prefabs["rock1"], 
-			prefabs["rock2"], 
-			prefabs["rock3"], 
-			prefabs["parabola"]
-			}, gameObjects
+		SpawnSideObjects(
+			mapData, 
+			{
+				prefabs["rock1"], 
+				prefabs["rock2"], 
+				prefabs["rock3"], 
+				prefabs["parabola"]
+			}, 
+			gameObjects,
+			7.f
 		);
 
 		for (size_t i = 0; i < obstacles.size(); i++)
@@ -244,21 +248,15 @@ namespace Game
 
 		float w = (float)window.Width();
 		float h = (float)window.Height();
-		gameOverTextTransform.position = glm::vec3(-0.7f, 0.f, 0.f);
-		gameOverTextTransform.scale = glm::vec3(w/h, 1.f, 1.f) * (64.f / h);
-		fpsTextTransform.position = glm::vec3(-0.9f, 0.9f, 0.f);
-		fpsTextTransform.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
-		startTextTransform.scale = glm::vec3(w / h, 1.f, 1.f);
+		startTextTransform.scale = glm::vec3(h / w, 1.f, 1.f);
 		startTextTransform.position = glm::vec3(-5.f, 2.5f, 6.f);
-		pointsTextTransform.position = glm::vec3(-0.9f, 0.75f, 0.f);
-		pointsTextTransform.scale = glm::vec3(w / h, 1.f, 1.f) * (0.8f * 64.f / h);
 
 		// setup camera
 		camera.Init(70.f / 180.f * 3.1415f, (float)window.Width() / window.Height(), 0.1f, 200.f);
 		cameraTransform.position = player->cameraOffset;
 
 		// set start state
-		ChangeState(new PlayGame());
+		ChangeState(new StartGame());
 
 		pointSystem.SetStartPoint(mapData, player->transform.position);
 		pointSystem.LoadHighScore();
@@ -384,6 +382,63 @@ namespace Game
 		currentState->Enter(this);
 	}
 
+	void App::StartGame::Enter(App* app)
+	{
+		textTransform.position = glm::vec3(-0.95f, 0.8f, 0.f);
+		float w = (float)app->window.Width();
+		float h = (float)app->window.Height();
+		textTransform.scale = glm::vec3(h/w, 1.f, 1.f) * (64.f / h);
+	}
+
+	void App::StartGame::Update(App* app)
+	{
+		startScreenTimer += app->deltaTime;
+		textTimer += app->deltaTime;
+
+		if (startScreenTimer >= startScreenDuration)
+		{
+			app->ChangeState(new PlayGame);
+			return;
+		}
+		if (textIndex < 2 && textTimer >= textDurations[textIndex])
+		{
+			textIndex++;
+			textTimer = 0.f;
+		}
+	}
+
+	void App::StartGame::DrawUI(App* app)
+	{
+		if (textIndex == 0)
+		{
+			app->textRenderer.DrawText(
+				"You are stranded\n"
+				"on an alien planet\n"
+				"but you have found\n"
+				"a deserted ship that\n"
+				"can bring you home.",
+				textTransform.CalcMatrix(),
+				glm::vec3(1.f));
+		}
+		else if (textIndex == 1)
+		{
+			app->textRenderer.DrawText(
+				"All you have\n"
+				"to do is to get it\n"
+				"up to speed...",
+				textTransform.CalcMatrix(),
+				glm::vec3(1.f));
+		}
+		else if(textIndex == 2)
+		{
+			app->textRenderer.DrawText(
+				"But there is something\n"
+				"lurking in the sand...",
+				textTransform.CalcMatrix(),
+				glm::vec3(1.f, 0.f, 0.f));
+		}
+	}
+
 	void App::PlayGame::Enter(App* app)
 	{
 		app->cameraTransform.position = app->player->cameraOffset;
@@ -392,6 +447,11 @@ namespace Game
 		app->player->yRotation = 0.f;
 		app->player->yAngularVelocity = 0.f;
 		app->player->velocityVector *= 0.f;
+
+		float w = (float)app->window.Width();
+		float h = (float)app->window.Height();
+		textTransform.position = glm::vec3(-0.9f, 0.9f, 0.f);
+		textTransform.scale = glm::vec3(h / w, 1.f, 1.f) * (0.8f * 64.f / h);
 	}
 
 	void App::PlayGame::Update(App* app)
@@ -438,16 +498,16 @@ namespace Game
 		{
 			// sink into the ground to hide
 			hunter->transform.position.y = glm::mix(hunter->transform.position.y, -10.f, 0.5f * app->deltaTime);
+			hunterSpawnSide *= -1.f;
 		}
 
 		// check if player is approaching the road edge
-		if (player->IsColliding(app->mapData, {}, 4.f, 0.f))
+		if (player->IsColliding(app->mapData, {}, 3.5f, 0.f))
 		{
 			if (glm::distance(hunter->transform.position, player->transform.position) > 10.f)
 			{
-				float side = glm::sign(hunter->transform.Forward().x);// some semi-random sign
 				hunter->transform.position = player->transform.position + 
-					player->transform.Forward() * 10.f + player->transform.Right() * (10.f * side);
+					player->transform.Forward() * 10.f + player->transform.Right() * (10.f * hunterSpawnSide);
 			}
 			hunterFollowTimer = hunterFollowDuration;
 		}
@@ -461,8 +521,13 @@ namespace Game
 
 	void App::PlayGame::DrawUI(App* app)
 	{
-		app->textRenderer.DrawText("fps:" + std::to_string(int(100.f / app->deltaTime) / 100), app->fpsTextTransform.CalcMatrix(), glm::vec3(1.f));
-		app->textRenderer.DrawText("POINTS:" + std::to_string(app->pointSystem.currentPoints) + "\nHIGHSCORE:" + std::to_string(app->pointSystem.highScore), app->pointsTextTransform.CalcMatrix(), glm::vec3(1.f));
+		app->textRenderer.DrawText(
+			"FPS:" + std::to_string(int(100.f / app->deltaTime) / 100) +
+			"\nPOINTS:" + std::to_string(app->pointSystem.currentPoints) + 
+			"\nHIGHSCORE:" + std::to_string(app->pointSystem.highScore),
+			textTransform.CalcMatrix(), 
+			glm::vec3(1.f)
+		);
 	}
 
 	void App::GameOver::Enter(App* app)
@@ -472,6 +537,11 @@ namespace Game
 		app->player->acceleration = app->player->startAcceleration;
 		app->pointSystem.ResetScore();
 		app->pointSystem.SaveHighScore();
+
+		float w = (float)app->window.Width();
+		float h = (float)app->window.Height();
+		gameOverTextTransform.position = glm::vec3(-0.7f, 0.f, 0.f);
+		gameOverTextTransform.scale = glm::vec3(h / w, 1.f, 1.f) * (64.f / h);
 	}
 
 	void App::GameOver::Update(App* app)
@@ -486,6 +556,6 @@ namespace Game
 
 	void App::GameOver::DrawUI(App* app)
 	{
-		app->textRenderer.DrawText("Game Over!", app->gameOverTextTransform.CalcMatrix(), glm::vec3(1.f, 0.f, 0.f));
+		app->textRenderer.DrawText("Game Over!", gameOverTextTransform.CalcMatrix(), glm::vec3(1.f, 0.f, 0.f));
 	}
 }
