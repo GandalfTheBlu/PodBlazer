@@ -556,7 +556,7 @@ namespace Game
 		float w = (float)app->window.Width();
 		float h = (float)app->window.Height();
 		gameOverTextTransform.position = glm::vec3(-0.7f, 0.f, 0.f);
-		gameOverTextTransform.scale = glm::vec3(h / w, 1.f, 1.f) * (64.f / h);
+		gameOverTextTransform.scale = glm::vec3(h / w, 1.f, 1.f) * (2.f*64.f / h);
 	}
 
 	void App::GameOver::Update(App* app)

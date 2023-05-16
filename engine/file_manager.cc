@@ -136,8 +136,52 @@ namespace Engine
 			std::string mtlName;
 			std::string indices;
 		};
+
 		std::vector<ObjPGroupStr> objPGroupStrings;
-		std::regex pGroupRgx("usemtl\\s(.*)[\\S\\s]*?(\\n[f][f\\s0-9\/]+)");
+
+		for (size_t i = 0; i < objText.size(); i++)
+		{
+			if (objText[i] != 'u')
+				continue;
+
+			if (i + 7 >= objText.size() || objText.substr(i, 6) != "usemtl")
+				continue;
+
+			i += 7;// put i on the first letter of the mtlName
+
+			// get name
+			std::string mtlName;
+			for (; i < objText.size() && objText[i] != '\n'; i++)
+				mtlName += objText[i];
+
+			for (; i+2 < objText.size(); i++)
+			{
+				if (objText[i] == '\n' && objText[i + 1] == 'f' && objText[i + 2] == ' ')
+				{
+					i++;// put i on the first 'f'
+					break;
+				}
+			}
+
+			size_t facesStart = i;
+
+			// read all faces
+			for (; i+1 < objText.size(); i++)
+			{
+				if (objText[i] != '\n')
+					continue;
+
+				if (objText[i + 1] != 'f')
+					break;
+			}
+
+			std::string indices = objText.substr(facesStart, i - facesStart + 1);
+
+			objPGroupStrings.push_back({mtlName, indices});
+		}
+
+		/*std::vector<ObjPGroupStr> objPGroupStrings;
+		std::regex pGroupRgx("usemtl\\s(.*)[\\S\\s]*?(\\n[f][f\\s0-9\\/]+)");
 		std::smatch pGroupMatch;
 		std::string::const_iterator pGroupStart(objText.cbegin());
 		while (std::regex_search(pGroupStart, objText.cend(), pGroupMatch, pGroupRgx))
@@ -146,7 +190,7 @@ namespace Engine
 			std::string indices = pGroupMatch[2];
 			objPGroupStrings.push_back({ mtlName, indices });
 			pGroupStart = pGroupMatch.suffix().first;
-		}
+		}*/
 
 		// get primitive groups
 		struct IndexGroup
