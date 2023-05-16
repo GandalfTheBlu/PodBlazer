@@ -395,7 +395,22 @@ namespace Game
 		startScreenTimer += app->deltaTime;
 		textTimer += app->deltaTime;
 
-		if (startScreenTimer >= startScreenDuration)
+		bool skip = false;
+
+		int gamePadConnected = glfwJoystickPresent(GLFW_JOYSTICK_1);
+		if (gamePadConnected == 1) {
+			int buttonsCount;
+			const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonsCount);
+
+			if (buttons[0] == 1)
+				skip = true;
+		}
+		if (app->keys[GLFW_KEY_ENTER].pressed)
+		{
+			skip = true;
+		}
+
+		if (skip || startScreenTimer >= startScreenDuration)
 		{
 			app->ChangeState(new PlayGame);
 			return;
